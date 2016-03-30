@@ -115,7 +115,9 @@ public class OnPremisesIdeApiServletModule extends ServletModule {
                "/resources/*",
                "/ext/*",
                "/ssh/*",
-               "/ssh")
+               "/ssh",
+               "/permissions/",
+               "/permissions/*")
                 .through(com.codenvy.auth.sso.client.LoginFilter.class);
 
         final Map<String, String> corsFilterParams = new HashMap<>();
