@@ -45,8 +45,6 @@ import static org.testng.Assert.assertTrue;
 /**
  * Tests for {@link PermissionManager}
  *
- * TODO Cover all method
- *
  * @author Sergii Leschenko
  */
 @Listeners(value = {MockitoTestNGListener.class})
