@@ -53,6 +53,8 @@ import static org.eclipse.che.api.workspace.shared.Constants.LINK_REL_GET_WORKSP
  *
  * New implementation of method use '{@link WorkspaceActions#READ read}' permission for fetching workspaces that belong to current user.
  *
+ * TODO This is temporary solution remove when permissions will be moved to che project
+ *
  * @author Sergii Leschenko
  */
 @Api(value = "/workspace", description = "Workspace REST API")
