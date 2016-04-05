@@ -62,15 +62,8 @@ public class PermissionManager {
 
         final PermissionsStorage permissionsStorage = getPermissionsStorage(domain);
         if (!newPermissions.getActions().contains("setPermissions")
-            && permissionsStorage.exists(user, domain, instance, "setPermissions")) {
-
-            if (!permissionsStorage.getByInstance(domain, instance)
-                                   .stream()
-                                   .anyMatch(permission -> !permission.getUser().equals(user)
-                                                           && permission.getActions().contains("setPermissions"))) {
-                throw new ConflictException(
-                        "Can't edit permissions because there is not any another user with permission 'setPermissions'");
-            }
+            && userHasLastSetPermissions(permissionsStorage, user, domain, instance)) {
+            throw new ConflictException("Can't edit permissions because there is not any another user with permission 'setPermissions'");
         }
         permissionsStorage.store(newPermissions);
     }
@@ -107,27 +100,13 @@ public class PermissionManager {
         return getPermissionsStorage(domain).get(user, domain);
     }
 
-    private PermissionsStorage getPermissionsStorage(String domain) throws ConflictException {
-        final PermissionsStorage permissionsStorage = domainToStorage.get(domain);
-        if (permissionsStorage == null) {
-            throw new ConflictException("Unknown domain");//TODO Fix message
-        }
-        return permissionsStorage;
-    }
-
     /**
      * @see PermissionsStorage#remove(String, String, String)
      */
     public void remove(String user, String domain, String instance) throws ConflictException, ServerException {
         final PermissionsStorage permissionsStorage = getPermissionsStorage(domain);
-        if (permissionsStorage.exists(user, domain, instance, "setPermissions")) {
-            if (!permissionsStorage.getByInstance(domain, instance)
-                                   .stream()
-                                   .anyMatch(permission -> !permission.getUser().equals(user)
-                                                           && permission.getActions().contains("setPermissions"))) {
-                throw new ConflictException(
-                        "Can't remove permissions because there is not any another user with permission 'setPermissions'");
-            }
+        if (userHasLastSetPermissions(permissionsStorage, user, domain, instance)) {
+            throw new ConflictException("Can't remove permissions because there is not any another user with permission 'setPermissions'");
         }
         permissionsStorage.remove(user, domain, instance);
     }
@@ -152,7 +131,28 @@ public class PermissionManager {
      * @param domainId
      *         id of domain
      */
-    public Set<String> getDomainsActions(String domainId) {
-        return domains.get(domainId).getAllowedActions();
+    public Set<String> getDomainsActions(String domainId) throws ConflictException {
+        final PermissionsDomain permissionsDomain = domains.get(domainId);
+        if (permissionsDomain == null) {
+            throw new ConflictException("Requested unsupported domain '" + domainId + "'");
+        }
+        return permissionsDomain.getAllowedActions();
+    }
+
+    private PermissionsStorage getPermissionsStorage(String domain) throws ConflictException {
+        final PermissionsStorage permissionsStorage = domainToStorage.get(domain);
+        if (permissionsStorage == null) {
+            throw new ConflictException("Requested unsupported domain '" + domain + "'");
+        }
+        return permissionsStorage;
+    }
+
+    private boolean userHasLastSetPermissions(PermissionsStorage permissionsStorage, String user, String domain, String instance)
+            throws ServerException, ConflictException {
+        return permissionsStorage.exists(user, domain, instance, "setPermissions")
+               && !permissionsStorage.getByInstance(domain, instance)
+                                     .stream()
+                                     .anyMatch(permission -> !permission.getUser().equals(user)
+                                                             && permission.getActions().contains("setPermissions"));
     }
 }
