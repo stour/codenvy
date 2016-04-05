@@ -70,7 +70,7 @@ public class PermissionsService extends Service {
     @GET
     @Path("/{domain}")
     @Produces(APPLICATION_JSON)
-    public Set<String> getSupportedActions(@PathParam("domain") String domain) {
+    public Set<String> getSupportedActions(@PathParam("domain") String domain) throws ConflictException {
         return permissionManager.getDomainsActions(domain);
     }
 
