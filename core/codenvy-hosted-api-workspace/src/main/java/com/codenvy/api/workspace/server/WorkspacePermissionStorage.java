@@ -49,8 +49,6 @@ import static com.mongodb.client.model.Filters.in;
  * <p>This implementation based on {@link CommonPermissionStorage} and contains checking
  * that is typical only for {@link WorkspaceDomain}'s permissions
  *
- * TODO This is temporary solution remove when permissions will be moved to che project
- *
  * @author Sergii Leschenko
  */
 @Singleton
@@ -95,6 +93,5 @@ public class WorkspacePermissionStorage extends CommonPermissionStorage {
             }
         }
         return workspaces;
-
     }
 }
