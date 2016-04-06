@@ -14,6 +14,7 @@
  */
 package com.codenvy.api.workspace.server.filters;
 
+import com.google.api.client.repackaged.com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Striped;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -25,7 +26,6 @@ import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 
@@ -41,14 +41,14 @@ import java.util.stream.Collectors;
  * @author Sergii Leschenko
  */
 public class RamLimitInterceptor implements MethodInterceptor {
+    //TODO Move it to configuration
     private static final int RAM_LIMIT = 2000;
 
     private static final Striped<Lock> START_LOCKS = Striped.lazyWeakLock(100);
 
+    @VisibleForTesting
     @Inject
-    private WorkspaceDao     workspaceDao;
-    @Inject
-    private WorkspaceManager workspaceManager;
+    WorkspaceManager workspaceManager;
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
@@ -62,7 +62,7 @@ public class RamLimitInterceptor implements MethodInterceptor {
                 String workspaceId = ((String)arguments[0]);
                 envName = ((String)arguments[1]);
                 try {
-                    workspaceConfig = workspaceDao.get(workspaceId).getConfig();
+                    workspaceConfig = workspaceManager.getWorkspace(workspaceId).getConfig();
                 } catch (NotFoundException | ServerException e) {
                     //Can't authorize operation
                     throw new ServerException(e);
@@ -88,21 +88,21 @@ public class RamLimitInterceptor implements MethodInterceptor {
             }
 
             final String finalEnvName = envName;
-            final Optional<? extends Environment> environmentOptional = workspaceConfig.getEnvironments()
-                                                                                       .stream()
-                                                                                       .filter(env -> env.getName().equals(finalEnvName))
-                                                                                       .findFirst();
-            final long requiredRam = getUsedRam(environmentOptional);
+            final Optional<? extends Environment> environmentToStart = workspaceConfig.getEnvironments()
+                                                                                      .stream()
+                                                                                      .filter(env -> env.getName().equals(finalEnvName))
+                                                                                      .findFirst();
+            final long requiredRam = getUsedRam(environmentToStart);
 
-            final List<Optional<EnvironmentImpl>> activeEnviroments =
+            final List<Optional<EnvironmentImpl>> activeEnvironments =
                     workspaceManager.getWorkspaces(EnvironmentContext.getCurrent().getUser().getId())
                                     .stream()
-                                    .map(workspace -> workspace.getConfig().getEnvironment(
-                                            workspace.getRuntime().getActiveEnv()))
+                                    .filter(workspace -> workspace.getRuntime() != null)
+                                    .map(workspace -> workspace.getConfig().getEnvironment(workspace.getRuntime().getActiveEnv()))
                                     .collect(Collectors.toList());
             int usedRam = 0;
-            for (Optional<EnvironmentImpl> activeEnviroment : activeEnviroments) {
-                usedRam += getUsedRam(activeEnviroment);
+            for (Optional<EnvironmentImpl> activeEnvironment : activeEnvironments) {
+                usedRam += getUsedRam(activeEnvironment);
             }
 
             if (requiredRam + usedRam > RAM_LIMIT) {
