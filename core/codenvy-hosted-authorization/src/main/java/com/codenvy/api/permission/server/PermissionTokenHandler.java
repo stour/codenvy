@@ -19,6 +19,7 @@ import com.codenvy.auth.sso.client.ServerClient;
 import com.codenvy.auth.sso.client.SsoClientPrincipal;
 import com.codenvy.auth.sso.client.TokenHandler;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.commons.user.User;
 
@@ -92,7 +93,7 @@ public class PermissionTokenHandler implements TokenHandler {
         public boolean hasPermission(String domain, String instance, String action) {
             try {
                 return permissionChecker.hasPermission(getId(), domain, instance, action);
-            } catch (ServerException e) {
+            } catch (ServerException | ConflictException e) {
                 //TODO Think about throwing RuntimeException or rethrowing ServerException
                 return false;
             }

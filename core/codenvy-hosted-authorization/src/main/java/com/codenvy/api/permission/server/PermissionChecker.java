@@ -14,6 +14,7 @@
  */
 package com.codenvy.api.permission.server;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ServerException;
 
 /**
@@ -22,5 +23,5 @@ import org.eclipse.che.api.core.ServerException;
  * @author Sergii Leschenko
  */
 public interface PermissionChecker {
-    boolean hasPermission(String user, String domain, String instance, String action) throws ServerException;
+    boolean hasPermission(String user, String domain, String instance, String action) throws ServerException, ConflictException;
 }
