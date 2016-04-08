@@ -14,11 +14,11 @@
  */
 package com.codenvy.api.permission.server.dao;
 
-import com.codenvy.api.permission.server.Permissions;
 import com.codenvy.api.permission.server.PermissionsDomain;
+import com.codenvy.api.permission.server.PermissionsImpl;
 
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
 import java.util.List;
@@ -48,43 +48,43 @@ public interface PermissionsStorage {
      * @param permission
      *         permission to store
      */
-    void store(Permissions permission) throws ServerException;
+    void store(PermissionsImpl permission) throws ServerException;
 
     /**
      * @param user
      *         user id
      * @return set of permissions
      */
-    List<Permissions> get(String user) throws ServerException;
-
-    /**
-     * @param user
-     *         user id
-     * @param domain
-     *         domain id
-     * @return set of permissions
-     */
-    List<Permissions> get(String user, String domain) throws ServerException;
+    List<PermissionsImpl> get(String user) throws ServerException;
 
     /**
      * @param user
      *         user id
      * @param domain
      *         domain id
-     * @param instance
-     *         instance id
      * @return set of permissions
      */
-    Permissions get(String user, String domain, String instance) throws ServerException;
+    List<PermissionsImpl> get(String user, String domain) throws ServerException;
 
     /**
+     * @param user
+     *         user id
      * @param domain
      *         domain id
      * @param instance
      *         instance id
      * @return set of permissions
      */
-    List<Permissions> getByInstance(String domain, String instance) throws ServerException;
+    PermissionsImpl get(String user, String domain, String instance) throws ServerException, NotFoundException;
+
+    /**
+     * @param domain
+     *         domain id
+     * @param instance
+     *         instance id
+     * @return set of permissions
+     */
+    List<PermissionsImpl> getByInstance(String domain, String instance) throws ServerException;
 
     /**
      * @param user

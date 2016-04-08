@@ -15,7 +15,6 @@
 package com.codenvy.api.workspace.server.filters;
 
 import com.codenvy.api.workspace.server.WorkspaceDomain;
-import com.codenvy.api.workspace.server.WorkspaceDomain.WorkspaceActions;
 
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
@@ -24,6 +23,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.user.server.UserManager;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
+import com.codenvy.api.workspace.server.WorkspaceAction;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
@@ -61,14 +61,14 @@ public class WorkspacePermissionsFilter extends CheMethodInvokerFilter {
         final String methodName = method.getName();
 
         final User currentUser = EnvironmentContext.getCurrent().getUser();
-        WorkspaceActions action;
+        WorkspaceAction action;
         String workspaceId;
 
         switch (methodName) {
             case "stop":
             case "startById":
                 workspaceId = ((String)arguments[0]);
-                action = WorkspaceActions.RUN;
+                action = WorkspaceAction.RUN;
                 break;
             case "getByKey": {
                 try {
@@ -77,25 +77,25 @@ public class WorkspacePermissionsFilter extends CheMethodInvokerFilter {
                     //Can't authorize operation
                     throw new ServerException(e);
                 }
-                action = WorkspaceActions.READ;
+                action = WorkspaceAction.READ;
                 break;
             }
 
             case "update":
                 workspaceId = ((String)arguments[0]);
-                action = WorkspaceActions.CONFIGURE;
+                action = WorkspaceAction.CONFIGURE;
                 break;
 
             case "delete":
                 workspaceId = ((String)arguments[0]);
-                action = WorkspaceActions.DELETE;
+                action = WorkspaceAction.DELETE;
                 break;
 
             default:
                 return;
         }
 
-        if (action.equals(WorkspaceActions.DELETE)) {
+        if (action.equals(WorkspaceAction.DELETE)) {
             try {
                 final Account account = accountDao.getByWorkspace(workspaceId);
                 if (currentUser.hasPermission("account", account.getId(), "deleteWorkspaces")) {

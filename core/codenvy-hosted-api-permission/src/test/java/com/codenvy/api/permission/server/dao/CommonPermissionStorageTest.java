@@ -14,8 +14,9 @@
  */
 package com.codenvy.api.permission.server.dao;
 
-import com.codenvy.api.permission.server.Permissions;
+import com.codenvy.api.permission.shared.Permissions;
 import com.codenvy.api.permission.server.PermissionsDomain;
+import com.codenvy.api.permission.server.PermissionsImpl;
 import com.github.fakemongo.Fongo;
 import com.google.common.collect.ImmutableSet;
 import com.mongodb.MongoClient;
@@ -32,7 +33,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -65,14 +65,14 @@ public class CommonPermissionStorageTest {
         final CodecRegistry defaultRegistry = MongoClient.getDefaultCodecRegistry();
         final MongoDatabase database = fongo.getDatabase("permissions")
                                             .withCodecRegistry(fromRegistries(defaultRegistry,
-                                                                              fromCodecs(new PermissionsCodec(defaultRegistry))));
+                                                                              fromCodecs(new PermissionsImplCodec(defaultRegistry))));
         collection = database.getCollection("permissions", Permissions.class);
         permissionStorage = new CommonPermissionStorage(database, "permissions", ImmutableSet.of(new TestDomain()));
     }
 
     @Test
     public void shouldStorePermissions() throws Exception {
-        final Permissions permissions = createPermissions();
+        final PermissionsImpl permissions = createPermissions();
 
         permissionStorage.store(permissions);
 
@@ -85,10 +85,10 @@ public class CommonPermissionStorageTest {
 
     @Test
     public void shouldUpdatePermissionsWhenItHasAlreadyExisted() throws Exception {
-        Permissions oldPermissions = createPermissions();
+        PermissionsImpl oldPermissions = createPermissions();
         permissionStorage.store(oldPermissions);
 
-        Permissions newPermissions = new Permissions(oldPermissions.getUser(), oldPermissions.getDomain(), oldPermissions.getInstance(),
+        PermissionsImpl newPermissions = new PermissionsImpl(oldPermissions.getUser(), oldPermissions.getDomain(), oldPermissions.getInstance(),
                                                      singletonList("read"));
         permissionStorage.store(newPermissions);
 
@@ -102,7 +102,7 @@ public class CommonPermissionStorageTest {
     @Test(expectedExceptions = IllegalArgumentException.class,
           expectedExceptionsMessageRegExp = "Storage doesn't support domain with id 'fake'")
     public void shouldNotStorePermissionsWhenItHasUnsupportedDomain() throws Exception {
-        final Permissions permissions = new Permissions("user",
+        final PermissionsImpl permissions = new PermissionsImpl("user",
                                                         "fake",
                                                         "test123",
                                                         Arrays.asList("read", "use", "create", "remove"));
@@ -113,7 +113,7 @@ public class CommonPermissionStorageTest {
     @Test(expectedExceptions = IllegalArgumentException.class,
           expectedExceptionsMessageRegExp = "Domain with id 'test' doesn't support next action\\(s\\): \\w+, \\w+")
     public void shouldNotStorePermissionsWhenItContainsUnsupportedActions() throws Exception {
-        final Permissions permissions = new Permissions("user",
+        final PermissionsImpl permissions = new PermissionsImpl("user",
                                                         "test",
                                                         "test123",
                                                         Arrays.asList("read", "use", "create", "remove"));
@@ -157,7 +157,7 @@ public class CommonPermissionStorageTest {
     public void shouldBeAbleToGetPermissionsByUser() throws Exception {
         final Permissions permissions = createPermissions();
         collection.insertOne(permissions);
-        collection.insertOne(new Permissions("anotherUser", "test", "test123", singletonList("read")));
+        collection.insertOne(new PermissionsImpl("anotherUser", "test", "test123", singletonList("read")));
 
         permissionStorage.get(permissions.getUser());
 
@@ -179,9 +179,9 @@ public class CommonPermissionStorageTest {
     public void shouldBeAbleToGetPermissionsByUserAndDomain() throws Exception {
         final Permissions permissions = createPermissions();
         collection.insertOne(permissions);
-        collection.insertOne(new Permissions("user", "anotherDomain", "test123", singletonList("read")));
+        collection.insertOne(new PermissionsImpl("user", "anotherDomain", "test123", singletonList("read")));
 
-        final List<Permissions> result = permissionStorage.get(permissions.getUser(), permissions.getDomain());
+        final List<PermissionsImpl> result = permissionStorage.get(permissions.getUser(), permissions.getDomain());
 
         assertEquals(result.size(), 1);
         assertEquals(result.get(0), permissions);
@@ -198,9 +198,9 @@ public class CommonPermissionStorageTest {
     public void shouldBeAbleToGetPermissionsByInstance() throws Exception {
         final Permissions permissions = createPermissions();
         collection.insertOne(permissions);
-        collection.insertOne(new Permissions("user", "domain", "otherTest", singletonList("read")));
+        collection.insertOne(new PermissionsImpl("user", "domain", "otherTest", singletonList("read")));
 
-        final List<Permissions> result = permissionStorage.getByInstance(permissions.getDomain(), permissions.getInstance());
+        final List<PermissionsImpl> result = permissionStorage.getByInstance(permissions.getDomain(), permissions.getInstance());
 
         assertEquals(result.size(), 1);
         assertEquals(result.get(0), permissions);
@@ -227,7 +227,7 @@ public class CommonPermissionStorageTest {
     public void shouldReturnsPermissionsWithEmptyActionsListWhenThereIsNotAnyPermissionsForGivenUserAndDomainAndInstance() throws Exception {
         final Permissions result = permissionStorage.get("user", "domain", "instance");
 
-        assertEquals(result, new Permissions("user", "domain", "instance", emptyList()));
+        assertEquals(result, new PermissionsImpl("user", "domain", "instance", emptyList()));
     }
 
     @Test(expectedExceptions = ServerException.class)
@@ -256,8 +256,8 @@ public class CommonPermissionStorageTest {
         new CommonPermissionStorage(db, "permissions", ImmutableSet.of(new TestDomain())).exists("user", "domain", "test123", "read");
     }
 
-    private Permissions createPermissions() {
-        return new Permissions("user",
+    private PermissionsImpl createPermissions() {
+        return new PermissionsImpl("user",
                                "test",
                                "test123",
                                Arrays.asList("read", "write", "use", "delete"));

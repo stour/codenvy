@@ -51,10 +51,6 @@
             <artifactId>guice-multibindings</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
         </dependency>
@@ -99,12 +95,12 @@
             <artifactId>che-core-commons-inject</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.everrest</groupId>
-            <artifactId>everrest-core</artifactId>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-commons-lang</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
+            <groupId>org.everrest</groupId>
+            <artifactId>everrest-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

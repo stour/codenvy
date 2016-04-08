@@ -12,22 +12,23 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.workspace.server;
+package com.codenvy.api.permission.server.dao;
 
-import com.codenvy.api.permission.server.PermissionsDomain;
+import com.google.inject.BindingAnnotation;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
+ * Annotation for binding domains which will store their permissions in {@link CommonPermissionStorage}.
+ *
  * @author Sergii Leschenko
  */
-public class WorkspaceDomain extends PermissionsDomain {
-    public static final String DOMAIN_ID = "workspace";
-
-    public WorkspaceDomain() {
-        super(DOMAIN_ID, Stream.of(WorkspaceAction.values())
-                               .map(WorkspaceAction::toString)
-                               .collect(Collectors.toSet()));
-    }
+@Target(ElementType.PARAMETER)
+@Retention(RUNTIME)
+@BindingAnnotation
+public @interface CommonDomains {
 }

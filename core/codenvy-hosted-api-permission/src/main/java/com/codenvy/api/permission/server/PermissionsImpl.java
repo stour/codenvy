@@ -14,6 +14,8 @@
  */
 package com.codenvy.api.permission.server;
 
+import com.codenvy.api.permission.shared.Permissions;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,14 +25,21 @@ import java.util.Objects;
  *
  * @author Sergii Leschenko
  */
-public class Permissions {
+public class PermissionsImpl implements Permissions {
     //TODO Think about defining of public permissions. To wit { user:*, domain:recipe, instance:recipe123, action: read}
     private String       user;
     private String       domain;
     private String       instance;
     private List<String> actions;
 
-    public Permissions(String user, String domain, String instance, List<String> actions) {
+    public PermissionsImpl(Permissions permissions) {
+        this.user = permissions.getUser();
+        this.domain = permissions.getDomain();
+        this.instance = permissions.getInstance();
+        this.actions = new ArrayList<>(permissions.getActions());
+    }
+
+    public PermissionsImpl(String user, String domain, String instance, List<String> actions) {
         this.user = user;
         this.domain = domain;
         this.instance = instance;
@@ -40,6 +49,7 @@ public class Permissions {
     /**
      * Returns used id
      */
+    @Override
     public String getUser() {
         return user;
     }
@@ -47,6 +57,7 @@ public class Permissions {
     /**
      * Returns domain id
      */
+    @Override
     public String getDomain() {
         return domain;
     }
@@ -54,6 +65,7 @@ public class Permissions {
     /**
      * Returns instance id
      */
+    @Override
     public String getInstance() {
         return instance;
     }
@@ -61,6 +73,7 @@ public class Permissions {
     /**
      * List of actions which user can perform for particular instance
      */
+    @Override
     public List<String> getActions() {
         return actions;
     }
@@ -68,8 +81,8 @@ public class Permissions {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Permissions)) return false;
-        final Permissions other = (Permissions)obj;
+        if (!(obj instanceof PermissionsImpl)) return false;
+        final PermissionsImpl other = (PermissionsImpl)obj;
         return Objects.equals(user, other.user) &&
                Objects.equals(domain, other.domain) &&
                Objects.equals(instance, other.instance) &&

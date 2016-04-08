@@ -14,13 +14,9 @@
  */
 package com.codenvy.api.workspace.server;
 
-import com.codenvy.api.permission.server.PermissionManager;
-import com.codenvy.api.permission.server.Permissions;
+import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.model.WorkerImpl;
 
-import org.eclipse.che.api.core.BadRequestException;
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
@@ -43,30 +39,31 @@ import java.util.List;
 public class WorkspacePermissionsRemover implements EventSubscriber<WorkspaceRemovedEvent> {
     private static final Logger LOG = LoggerFactory.getLogger(WorkspacePermissionsRemover.class);
 
-    private final EventService      eventService;
-    private final PermissionManager permissionManager;
+    private final EventService eventService;
+    private final WorkerDao    workerDao;
 
     @Inject
-    public WorkspacePermissionsRemover(EventService eventService, PermissionManager permissionManager) {
+    public WorkspacePermissionsRemover(EventService eventService,
+                                       WorkerDao workerDao) {
         this.eventService = eventService;
-        this.permissionManager = permissionManager;
+        this.workerDao = workerDao;
     }
 
     @Override
     public void onEvent(WorkspaceRemovedEvent event) {
-        final List<Permissions> permissions;
+        final List<WorkerImpl> workers;
         try {
-            permissions = permissionManager.getByInstance(WorkspaceDomain.DOMAIN_ID, event.getWorkspaceId());
-        } catch (ConflictException | ServerException e) {
-            LOG.error("Can't get user's permissions of workspace '" + event.getWorkspaceId() + "'", e);
+            workers = workerDao.getWorkers(event.getWorkspaceId());
+        } catch (ServerException e) {
+            LOG.error("Can't workers of workspace '" + event.getWorkspaceId() + "'", e);
             return;
         }
 
-        for (Permissions permission : permissions) {
+        for (WorkerImpl worker : workers) {
             try {
-                permissionManager.remove(permission.getUser(), permission.getDomain(), permission.getInstance());
-            } catch (ConflictException | ServerException e) {
-                LOG.error("Can't remove user's permissions to workspace", e);
+                workerDao.removeWorker(worker.getWorkspace(), worker.getUser());
+            } catch (ServerException e) {
+                LOG.error("Can't remove user's workers to workspace", e);
             }
         }
     }

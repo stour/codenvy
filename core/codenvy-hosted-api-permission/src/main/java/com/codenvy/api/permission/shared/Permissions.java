@@ -12,45 +12,33 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.permission.shared.dto;
-
-import com.codenvy.api.permission.shared.Permissions;
-
-import org.eclipse.che.dto.shared.DTO;
+package com.codenvy.api.permission.shared;
 
 import java.util.List;
 
 /**
- * TODO Think about extend class Permissions here and move shared DTO to separated module
+ * Represents users' permissions to access to some resources
+ *
  * @author Sergii Leschenko
  */
-@DTO
-public interface PermissionsDto extends Permissions {
-    @Override
+public interface Permissions {
+    /**
+     * Returns used id
+     */
     String getUser();
 
-    void setUser(String user);
-
-    PermissionsDto withUser(String user);
-
-    @Override
+    /**
+     * Returns domain id
+     */
     String getDomain();
 
-    void setDomain(String domain);
-
-    PermissionsDto withDomain(String domain);
-
-    @Override
+    /**
+     * Returns instance id
+     */
     String getInstance();
 
-    void setInstance(String instance);
-
-    PermissionsDto withInstance(String instance);
-
-    @Override
+    /**
+     * List of actions which user can perform for particular instance
+     */
     List<String> getActions();
-
-    void setActions(List<String> actions);
-
-    PermissionsDto withActions(List<String> actions);
 }

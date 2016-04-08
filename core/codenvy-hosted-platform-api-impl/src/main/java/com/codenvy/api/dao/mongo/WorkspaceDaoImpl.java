@@ -14,6 +14,8 @@
  */
 package com.codenvy.api.dao.mongo;
 
+import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.model.Worker;
 import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
@@ -166,10 +168,13 @@ import static java.util.Objects.requireNonNull;
 public class WorkspaceDaoImpl implements WorkspaceDao {
 
     private final MongoCollection<WorkspaceImpl> collection;
+    private final WorkerDao                      workerDao;
 
     @Inject
     public WorkspaceDaoImpl(@Named("mongo.db.organization") MongoDatabase database,
-                            @Named("organization.storage.db.workspace2.collection") String collectionName) {
+                            @Named("organization.storage.db.workspace2.collection") String collectionName,
+                            WorkerDao workerDao) {
+        this.workerDao = workerDao;
         collection = database.getCollection(collectionName, WorkspaceImpl.class);
         collection.createIndex(new Document("config.name", 1).append("namespace", 1), new IndexOptions().unique(true));
     }
@@ -245,6 +250,19 @@ public class WorkspaceDaoImpl implements WorkspaceDao {
         requireNonNull(namespace, "Workspace namespace must not be null");
 
         return collection.find(eq("namespace", namespace)).into(new ArrayList<>());
+    }
+
+    @Override
+    public List<WorkspaceImpl> getWorkspaces(String username) throws ServerException {
+        List<WorkspaceImpl> workspaces = new ArrayList<>();
+        for (Worker worker : workerDao.getWorkersByUser(username)) {
+            try {
+                workspaces.add(get(worker.getWorkspace()));
+            } catch (NotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return workspaces;
     }
 
 }

@@ -14,10 +14,12 @@
  */
 package com.codenvy.api.permission.server;
 
+import com.codenvy.api.permission.shared.Permissions;
 import com.codenvy.api.permission.shared.dto.PermissionsDto;
 
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -89,10 +91,7 @@ public class PermissionsService extends Service {
         checkArgument(!isNullOrEmpty(permissionsDto.getInstance()), "Instance required");
         checkArgument(!permissionsDto.getActions().isEmpty(), "One or more actions required");
 
-        permissionManager.storePermission(new Permissions(permissionsDto.getUser(),
-                                                          permissionsDto.getDomain(),
-                                                          permissionsDto.getInstance(),
-                                                          permissionsDto.getActions()));
+        permissionManager.storePermission(new PermissionsImpl(permissionsDto));
     }
 
     /**
@@ -106,7 +105,8 @@ public class PermissionsService extends Service {
     @Path("/{domain}/{instance}")
     @Produces(APPLICATION_JSON)
     public List<String> getUsersPermissions(@PathParam("domain") String domain,
-                                            @PathParam("instance") String instance) throws ServerException, ConflictException {
+                                            @PathParam("instance") String instance)
+            throws ServerException, ConflictException, NotFoundException {
         final Permissions permissions = permissionManager.get(EnvironmentContext.getCurrent().getUser().getId(), domain, instance);
         if (permissions != null) {
             return permissions.getActions();

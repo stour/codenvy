@@ -14,9 +14,9 @@
  */
 package com.codenvy.api.permission.server;
 
-import com.codenvy.api.permission.server.dao.CommonDomain;
+import com.codenvy.api.permission.server.dao.CommonDomains;
 import com.codenvy.api.permission.server.dao.CommonPermissionStorage;
-import com.codenvy.api.permission.server.dao.PermissionsCodec;
+import com.codenvy.api.permission.server.dao.PermissionsImplCodec;
 import com.codenvy.api.permission.server.dao.PermissionsStorage;
 import com.codenvy.api.permission.server.filter.GetPermissionsFilter;
 import com.codenvy.api.permission.server.filter.RemovePermissionsFilter;
@@ -40,7 +40,7 @@ public class PermissionsModule extends AbstractModule {
         bind(GetPermissionsFilter.class);
 
         //Creates empty multibinder to avoid error during container starting
-        Multibinder.newSetBinder(binder(), PermissionsDomain.class, CommonDomain.class);
+        Multibinder.newSetBinder(binder(), PermissionsDomain.class, CommonDomains.class);
 
         Multibinder<PermissionsStorage> storages = Multibinder.newSetBinder(binder(),
                                                                             PermissionsStorage.class);
@@ -50,9 +50,9 @@ public class PermissionsModule extends AbstractModule {
         binder.addBinding().toInstance(new CodecProvider() {
             @Override
             public <T> Codec<T> get(Class<T> clazz, CodecRegistry registry) {
-                if (clazz == Permissions.class) {
+                if (clazz == PermissionsImpl.class) {
                     @SuppressWarnings("unchecked")
-                    final Codec<T> codec = (Codec<T>)new PermissionsCodec(registry);
+                    final Codec<T> codec = (Codec<T>)new PermissionsImplCodec(registry);
                     return codec;
                 }
                 return null;

@@ -14,10 +14,9 @@
  */
 package com.codenvy.api.workspace.server;
 
-import com.codenvy.api.permission.server.PermissionManager;
-import com.codenvy.api.permission.server.Permissions;
+import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.model.WorkerImpl;
 
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
@@ -34,20 +33,20 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Adds permissions for owner after workspace creation
+ * Adds permissions for creator after workspace creation
  *
  * @author Sergii Leschenko
  */
 @Singleton
-public class WorkspaceOwnerPermissionsProvider implements EventSubscriber<WorkspaceCreatedEvent> {
+public class WorkspaceCreatorPermissionsProvider implements EventSubscriber<WorkspaceCreatedEvent> {
     private static final Logger LOG = LoggerFactory.getLogger(WorkspacePermissionsRemover.class);
 
-    private final PermissionManager permissionManager;
-    private final EventService      eventService;
+    private final WorkerDao    workerDao;
+    private final EventService eventService;
 
     @Inject
-    public WorkspaceOwnerPermissionsProvider(PermissionManager permissionManager, EventService eventService) {
-        this.permissionManager = permissionManager;
+    public WorkspaceCreatorPermissionsProvider(EventService eventService, WorkerDao workerDao) {
+        this.workerDao = workerDao;
         this.eventService = eventService;
     }
 
@@ -64,13 +63,11 @@ public class WorkspaceOwnerPermissionsProvider implements EventSubscriber<Worksp
     @Override
     public void onEvent(WorkspaceCreatedEvent event) {
         try {
-            permissionManager.storePermission(new Permissions(EnvironmentContext.getCurrent().getUser().getId(),
-                                                              WorkspaceDomain.DOMAIN_ID,
-                                                              event.getWorkspace().getId(),
-                                                              Stream.of(WorkspaceDomain.WorkspaceActions.values())
-                                                                    .map(WorkspaceDomain.WorkspaceActions::toString)
-                                                                    .collect(Collectors.toList())));
-        } catch (ServerException | ConflictException e) {
+            workerDao.store(new WorkerImpl(EnvironmentContext.getCurrent().getUser().getId(),
+                                           event.getWorkspace().getId(),
+                                           Stream.of(WorkspaceAction.values())
+                                                 .collect(Collectors.toList())));
+        } catch (ServerException e) {
             LOG.error("Can't add owner's permissions for workspace with id '" + event.getWorkspace().getId() + "'", e);
         }
     }

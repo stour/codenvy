@@ -115,7 +115,7 @@ public class RamLimitInterceptorTest {
         // do the interception
         ramLimitInterceptor.invoke(invocation);
 
-        verify(invocation.proceed());
+        verify(invocation).proceed();
     }
 
     /**

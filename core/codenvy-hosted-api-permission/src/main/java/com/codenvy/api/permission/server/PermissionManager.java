@@ -17,6 +17,7 @@ package com.codenvy.api.permission.server;
 import com.codenvy.api.permission.server.dao.PermissionsStorage;
 
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
 import javax.inject.Inject;
@@ -53,9 +54,9 @@ public class PermissionManager {
     }
 
     /**
-     * @see PermissionsStorage#store(Permissions)
+     * @see PermissionsStorage#store(PermissionsImpl)
      */
-    public void storePermission(Permissions newPermissions) throws ServerException, ConflictException {
+    public void storePermission(PermissionsImpl newPermissions) throws ServerException, ConflictException {
         final String domain = newPermissions.getDomain();
         final String instance = newPermissions.getInstance();
         final String user = newPermissions.getUser();
@@ -71,22 +72,22 @@ public class PermissionManager {
     /**
      * @see PermissionsStorage#get(String, String, String)
      */
-    public Permissions get(String user, String domain, String instance) throws ServerException, ConflictException {
+    public PermissionsImpl get(String user, String domain, String instance) throws ServerException, ConflictException, NotFoundException {
         return getPermissionsStorage(domain).get(user, domain, instance);
     }
 
     /**
      * @see PermissionsStorage#getByInstance(String, String)
      */
-    public List<Permissions> getByInstance(String domain, String instance) throws ServerException, ConflictException {
+    public List<PermissionsImpl> getByInstance(String domain, String instance) throws ServerException, ConflictException {
         return getPermissionsStorage(domain).getByInstance(domain, instance);
     }
 
     /**
      * @see PermissionsStorage#get(String)
      */
-    public List<Permissions> get(String user) throws ServerException {
-        List<Permissions> result = new ArrayList<>();
+    public List<PermissionsImpl> get(String user) throws ServerException {
+        List<PermissionsImpl> result = new ArrayList<>();
         for (PermissionsStorage permissionsStorage : domainToStorage.values()) {
             result.addAll(permissionsStorage.get(user));
         }
@@ -96,7 +97,7 @@ public class PermissionManager {
     /**
      * @see PermissionsStorage#get(String)
      */
-    public List<Permissions> get(String user, String domain) throws ServerException, ConflictException {
+    public List<PermissionsImpl> get(String user, String domain) throws ServerException, ConflictException {
         return getPermissionsStorage(domain).get(user, domain);
     }
 
