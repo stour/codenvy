@@ -97,29 +97,29 @@ public class CommonPermissionStorage implements PermissionsStorage {
     }
 
     @Override
-    public void store(PermissionsImpl permission) throws ServerException {
-        final PermissionsDomain permissionsDomain = idToDomain.get(permission.getDomain());
+    public void store(PermissionsImpl permissions) throws ServerException {
+        final PermissionsDomain permissionsDomain = idToDomain.get(permissions.getDomain());
         if (permissionsDomain == null) {
-            throw new IllegalArgumentException("Storage doesn't support domain with id '" + permission.getDomain() + "'");
+            throw new IllegalArgumentException("Storage doesn't support domain with id '" + permissions.getDomain() + "'");
         }
 
         final Set<String> allowedActions = permissionsDomain.getAllowedActions();
-        final Set<String> unsupportedActions = permission.getActions()
+        final Set<String> unsupportedActions = permissions.getActions()
                                                          .stream()
                                                          .filter(action -> !allowedActions.contains(action))
                                                          .collect(Collectors.toSet());
         if (!unsupportedActions.isEmpty()) {
-            throw new IllegalArgumentException("Domain with id '" + permission.getDomain() + "' doesn't support next action(s): " +
+            throw new IllegalArgumentException("Domain with id '" + permissions.getDomain() + "' doesn't support next action(s): " +
                                                unsupportedActions.stream()
                                                                  .collect(Collectors.joining(", ")));
         }
 
 
         try {
-            collection.replaceOne(and(eq("user", permission.getUser()),
-                                      eq("domain", permission.getDomain()),
-                                      eq("instance", permission.getInstance())),
-                                  permission,
+            collection.replaceOne(and(eq("user", permissions.getUser()),
+                                      eq("domain", permissions.getDomain()),
+                                      eq("instance", permissions.getInstance())),
+                                  permissions,
                                   new UpdateOptions().upsert(true));
         } catch (MongoException e) {
             throw new ServerException(e.getMessage(), e);
