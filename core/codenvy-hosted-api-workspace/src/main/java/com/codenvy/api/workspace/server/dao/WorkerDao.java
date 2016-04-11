@@ -16,7 +16,6 @@ package com.codenvy.api.workspace.server.dao;
 
 import com.codenvy.api.workspace.server.model.WorkerImpl;
 
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
@@ -38,7 +37,7 @@ public interface WorkerDao {
      * @throws ServerException
      *         when any other error occurs during worker storing
      */
-    void store(WorkerImpl worker) throws ConflictException, ServerException;
+    void store(WorkerImpl worker) throws ServerException;
 
     /**
      * Gets worker by user and workspace
