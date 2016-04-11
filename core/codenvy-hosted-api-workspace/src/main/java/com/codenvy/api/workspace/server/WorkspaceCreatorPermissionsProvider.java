@@ -68,7 +68,7 @@ public class WorkspaceCreatorPermissionsProvider implements EventSubscriber<Work
                                            Stream.of(WorkspaceAction.values())
                                                  .collect(Collectors.toList())));
         } catch (ServerException e) {
-            LOG.error("Can't add owner's permissions for workspace with id '" + event.getWorkspace().getId() + "'", e);
+            LOG.error("Can't add creator's permissions for workspace with id '" + event.getWorkspace().getId() + "'", e);
         }
     }
 }
