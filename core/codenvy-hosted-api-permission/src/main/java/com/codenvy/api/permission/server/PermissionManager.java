@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class that holds supported {@link PermissionsStorage} and delegates calls to them
+ * Facade for Permissions related operations.
  *
  * @author gazarenkov
  * @author Sergii Leschenko
@@ -54,37 +54,71 @@ public class PermissionManager {
     }
 
     /**
-     * @see PermissionsStorage#store(PermissionsImpl)
+     * Stores (adds or updates) permission.
+     * It is up to storage specific if it actually replaces existed permissions or ignore it
+     *
+     * @param permissions
+     *         permission to store
+     * @throws ConflictException
+     *         when permissions have unsupported domain
+     * @throws ConflictException
+     *         when new permissions remove last 'setPermissions' of given instance
+     * @throws ServerException
+     *         when any other error occurs during permissions storing
      */
-    public void storePermission(PermissionsImpl newPermissions) throws ServerException, ConflictException {
-        final String domain = newPermissions.getDomain();
-        final String instance = newPermissions.getInstance();
-        final String user = newPermissions.getUser();
+    public void storePermission(PermissionsImpl permissions) throws ServerException, ConflictException {
+        final String domain = permissions.getDomain();
+        final String instance = permissions.getInstance();
+        final String user = permissions.getUser();
 
         final PermissionsStorage permissionsStorage = getPermissionsStorage(domain);
-        if (!newPermissions.getActions().contains("setPermissions")
+        if (!permissions.getActions().contains("setPermissions")
             && userHasLastSetPermissions(permissionsStorage, user, domain, instance)) {
             throw new ConflictException("Can't edit permissions because there is not any another user with permission 'setPermissions'");
         }
-        permissionsStorage.store(newPermissions);
+        permissionsStorage.store(permissions);
     }
 
     /**
-     * @see PermissionsStorage#get(String, String, String)
+     * @param user
+     *         user id
+     * @param domain
+     *         domain id
+     * @param instance
+     *         instance id
+     * @return set of permissions
+     * @throws ConflictException
+     *         when given domain is unsupported
+     * @throws NotFoundException
+     *         when permissions with given user and domain and instance was not found
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     public PermissionsImpl get(String user, String domain, String instance) throws ServerException, ConflictException, NotFoundException {
         return getPermissionsStorage(domain).get(user, domain, instance);
     }
 
     /**
-     * @see PermissionsStorage#getByInstance(String, String)
+     * @param domain
+     *         domain id
+     * @param instance
+     *         instance id
+     * @return set of permissions
+     * @throws ConflictException
+     *         when given domain is unsupported
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     public List<PermissionsImpl> getByInstance(String domain, String instance) throws ServerException, ConflictException {
         return getPermissionsStorage(domain).getByInstance(domain, instance);
     }
 
     /**
-     * @see PermissionsStorage#get(String)
+     * @param user
+     *         user id
+     * @return set of permissions
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     public List<PermissionsImpl> get(String user) throws ServerException {
         List<PermissionsImpl> result = new ArrayList<>();
@@ -95,14 +129,35 @@ public class PermissionManager {
     }
 
     /**
-     * @see PermissionsStorage#get(String)
+     * @param user
+     *         user id
+     * @param domain
+     *         domain id
+     * @return set of permissions
+     * @throws ConflictException
+     *         when given domain is unsupported
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     public List<PermissionsImpl> get(String user, String domain) throws ServerException, ConflictException {
         return getPermissionsStorage(domain).get(user, domain);
     }
 
     /**
-     * @see PermissionsStorage#remove(String, String, String)
+     * Removes permissions of user related to the particular instance of specified domain
+     *
+     * @param user
+     *         user id
+     * @param domain
+     *         domain id
+     * @param instance
+     *         instance id
+     * @throws ConflictException
+     *         when given domain is unsupported
+     * @throws ConflictException
+     *         when removes last 'setPermissions' of given instance
+     * @throws ServerException
+     *         when any other error occurs during permissions removing
      */
     public void remove(String user, String domain, String instance) throws ConflictException, ServerException {
         final PermissionsStorage permissionsStorage = getPermissionsStorage(domain);
@@ -113,7 +168,19 @@ public class PermissionManager {
     }
 
     /**
-     * @see PermissionsStorage#exists(String, String, String, String)
+     * @param user
+     *         user id
+     * @param domain
+     *         domain id
+     * @param instance
+     *         instance id
+     * @param action
+     *         action name
+     * @return true if the permission exists
+     * @throws ConflictException
+     *         when given domain is unsupported
+     * @throws ServerException
+     *         when any other error occurs during permission existence checking
      */
     public boolean exists(String user, String domain, String instance, String action) throws ServerException, ConflictException {
         return getPermissionsStorage(domain).exists(user, domain, instance, action);
