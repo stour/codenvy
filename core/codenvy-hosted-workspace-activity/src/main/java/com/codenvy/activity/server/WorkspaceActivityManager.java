@@ -18,9 +18,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.workspace.Workspace;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
+import org.eclipse.che.api.workspace.shared.Constants;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.commons.schedule.ScheduleRate;
 import org.slf4j.Logger;
@@ -34,6 +36,9 @@ import javax.inject.Singleton;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.codenvy.activity.shared.Constants.ACTIVITY_CHECKER;
+import static org.eclipse.che.api.workspace.shared.Constants.WORKSPACE_STOPPED_BY;
+
 /**
  * Stops the inactive workspaces by given expiration time.
  *
@@ -44,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Singleton
 public class WorkspaceActivityManager {
+
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceActivityManager.class);
 
     private final long               expirePeriod;
@@ -65,6 +71,14 @@ public class WorkspaceActivityManager {
             public void onEvent(WorkspaceStatusEvent event) {
                 switch (event.getEventType()) {
                     case RUNNING:
+                        try {
+                            Workspace workspace = workspaceManager.getWorkspace(event.getWorkspaceId());
+                            if (workspace.getAttributes().remove(WORKSPACE_STOPPED_BY) != null); {
+                                workspaceManager.updateWorkspace(event.getWorkspaceId(), workspace);
+                            }
+                        } catch (Exception ex) {
+                            LOG.warn("Failed to remove stopped information attribute for workspace " + event.getWorkspaceId());
+                        }
                         update(event.getWorkspaceId(), System.currentTimeMillis());
                         break;
                     case STOPPED:
@@ -100,7 +114,12 @@ public class WorkspaceActivityManager {
         for (Map.Entry<String, Long> workspaceExpireEntry : activeWorkspaces.entrySet()) {
             if (workspaceExpireEntry.getValue() <= currentTime) {
                 try {
-                    workspaceManager.stopWorkspace(workspaceExpireEntry.getKey());
+                    String workspaceId = workspaceExpireEntry.getKey();
+
+                    Workspace workspace = workspaceManager.getWorkspace(workspaceId);
+                    workspace.getAttributes().put(WORKSPACE_STOPPED_BY, ACTIVITY_CHECKER);
+                    workspaceManager.updateWorkspace(workspaceId, workspace);
+                    workspaceManager.stopWorkspace(workspaceId);
                 } catch (NotFoundException e) {
                     LOG.info("Workspace already stopped");
                 } catch (Exception ex) {

@@ -34,7 +34,7 @@ validateExpectedString ".*Use.the.following.syntax\:.im-add-node.--codenvy-ip.<C
 
 # throw error if no Codenvy license
 executeIMCommand "--valid-exit-code=1" "im-add-node" "--codenvy-ip 192.168.56.110" "node1.${HOST_URL}"
-validateExpectedString ".*Codenvy.License.can.t.be.validated.*"
+validateExpectedString ".*Your.Codenvy.subscription.only.allows.a.single.server.*\"status\".\:.\"ERROR\".*"
 
 addCodenvyLicenseConfiguration
 storeCodenvyLicense
@@ -103,8 +103,12 @@ validateExpectedString ".*Nodes\",\"3\".*\[\" node1.${NEW_HOST_URL}\",\"node1.${
 # remove node2
 executeIMCommand "im-remove-node" "node2.${NEW_HOST_URL}"
 validateExpectedString ".*\"type\".\:.\"MACHINE\".*\"host\".\:.\"node2.${NEW_HOST_URL}\".*"
+
+executeSshCommand "sudo find /var/lib/puppet/ssl -name node2.${NEW_HOST_URL}.pem -delete" "node2.${NEW_HOST_URL}"  # remove puppet agent certificate
+
 doSleep "1m"  "Wait until Docker machine takes into account /usr/local/swarm/node_list config"
 executeSshCommand "sudo systemctl stop iptables"  # open port 23750
+
 doGet "http://${NEW_HOST_URL}:23750/info"
 validateExpectedString ".*Nodes\",\"2\".*\[\" node1.${NEW_HOST_URL}\",\"node1.${NEW_HOST_URL}:2375\"\].*\[\" ${NEW_HOST_URL}\",\"${NEW_HOST_URL}:2375\"\].*"
 

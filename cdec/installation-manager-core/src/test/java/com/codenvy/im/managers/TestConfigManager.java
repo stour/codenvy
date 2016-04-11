@@ -431,16 +431,26 @@ public class TestConfigManager extends BaseTest {
 
         doReturn(properties).when(spyConfigManager).loadConfigProperties("file");
 
+        final String testHttpProxy = "http://proxy.net:8080";
+        final String testHttpsProxy = "https://proxy.net:8080";
+        final ImmutableMap<String, Object> environment = ImmutableMap.of(Config.HTTP_PROXY, testHttpProxy,
+                                                                Config.HTTPS_PROXY, testHttpsProxy);
+        doReturn(environment).when(spyConfigManager).getEnvironment();
+
         Map<String, String> actualProperties = spyConfigManager.prepareInstallProperties("file",
                                                                                       null,
                                                                                       InstallType.SINGLE_SERVER,
                                                                                       ArtifactFactory.createArtifact(CDECArtifact.NAME),
                                                                                       Version.valueOf("3.1.0"),
                                                                                       true);
-        assertEquals(actualProperties.size(), 3);
+        assertEquals(actualProperties.size(), 5);
         assertEquals(actualProperties.get("a"), "b");
+
         assertTrue(actualProperties.containsKey(Config.PRIVATE_KEY));
         assertTrue(actualProperties.containsKey(Config.PUBLIC_KEY));
+
+        assertEquals(actualProperties.get(Config.HTTP_PROXY), testHttpProxy);
+        assertEquals(actualProperties.get(Config.HTTPS_PROXY), testHttpsProxy);
     }
 
     @Test
@@ -449,16 +459,26 @@ public class TestConfigManager extends BaseTest {
 
         doReturn(expectedProperties).when(spyConfigManager).loadCodenvyDefaultProperties(Version.valueOf("3.1.0"), InstallType.SINGLE_SERVER);
 
+        final String testHttpProxy = "http://proxy.net:8080";
+        final String testHttpsProxy = "https://proxy.net:8080";
+        final ImmutableMap<String, Object> environment = ImmutableMap.of(Config.HTTP_PROXY, testHttpProxy,
+                                                                         Config.HTTPS_PROXY, testHttpsProxy);
+        doReturn(environment).when(spyConfigManager).getEnvironment();
+
         Map<String, String> actualProperties = spyConfigManager.prepareInstallProperties(null,
                                                                                       null,
                                                                                       InstallType.SINGLE_SERVER,
                                                                                       ArtifactFactory.createArtifact(CDECArtifact.NAME),
                                                                                       Version.valueOf("3.1.0"),
                                                                                       true);
-        assertEquals(actualProperties.size(), 3);
+        assertEquals(actualProperties.size(), 5);
         assertEquals(actualProperties.get("a"), "b");
+
         assertTrue(actualProperties.containsKey(Config.PRIVATE_KEY));
         assertTrue(actualProperties.containsKey(Config.PUBLIC_KEY));
+
+        assertEquals(actualProperties.get(Config.HTTP_PROXY), testHttpProxy);
+        assertEquals(actualProperties.get(Config.HTTPS_PROXY), testHttpsProxy);
     }
 
     @Test

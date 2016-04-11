@@ -20,7 +20,7 @@
     <parent>
         <artifactId>onpremises-ide-parent</artifactId>
         <groupId>com.codenvy.onpremises</groupId>
-        <version>4.1.0-RC1-SNAPSHOT</version>
+        <version>4.2.0-RC1-SNAPSHOT</version>
     </parent>
     <artifactId>onpremises-ide-packaging-war-ext-server</artifactId>
     <packaging>war</packaging>
@@ -117,6 +117,14 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.plugin</groupId>
+            <artifactId>che-plugin-debugger-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.plugin</groupId>
+            <artifactId>che-plugin-gdb-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.plugin</groupId>
             <artifactId>che-plugin-git-provider-che</artifactId>
         </dependency>
         <dependency>
@@ -131,7 +139,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.plugin</groupId>
-            <artifactId>che-plugin-java-ext-debugger-java-server</artifactId>
+            <artifactId>che-plugin-java-debugger-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.plugin</groupId>
