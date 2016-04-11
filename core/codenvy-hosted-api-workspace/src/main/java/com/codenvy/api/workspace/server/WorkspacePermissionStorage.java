@@ -14,10 +14,10 @@
  */
 package com.codenvy.api.workspace.server;
 
-import com.codenvy.api.permission.shared.Permissions;
 import com.codenvy.api.permission.server.PermissionsDomain;
 import com.codenvy.api.permission.server.PermissionsImpl;
 import com.codenvy.api.permission.server.dao.PermissionsStorage;
+import com.codenvy.api.permission.shared.Permissions;
 import com.codenvy.api.workspace.server.dao.WorkerDao;
 import com.codenvy.api.workspace.server.model.Worker;
 import com.codenvy.api.workspace.server.model.WorkerImpl;
@@ -57,13 +57,13 @@ public class WorkspacePermissionStorage implements PermissionsStorage {
     }
 
     @Override
-    public void store(PermissionsImpl permission) throws ServerException {
-        workerDao.store(new WorkerImpl(permission.getUser(),
-                                       permission.getInstance(),
-                                       permission.getActions()
-                                                 .stream()
-                                                 .map(WorkspaceAction::valueOf)
-                                                 .collect(Collectors.toList())));
+    public void store(PermissionsImpl permissions) throws ServerException {
+        workerDao.store(new WorkerImpl(permissions.getUser(),
+                                       permissions.getInstance(),
+                                       permissions.getActions()
+                                                  .stream()
+                                                  .map(WorkspaceAction::valueOf)
+                                                  .collect(Collectors.toList())));
     }
 
     @Override
