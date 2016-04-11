@@ -45,7 +45,7 @@ public class WorkspaceApiModule extends AbstractModule {
         final RamLimitInterceptor ramLimitInterceptor = new RamLimitInterceptor();
         requestInjection(ramLimitInterceptor);
 
-        bindInterceptor(subclassesOf(WorkspaceService.class), names("rmissionsCstartById"), ramLimitInterceptor);
+        bindInterceptor(subclassesOf(WorkspaceService.class), names("startById"), ramLimitInterceptor);
         bindInterceptor(subclassesOf(WorkspaceService.class), names("startFromConfig"), ramLimitInterceptor);
     }
 }
