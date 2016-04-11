@@ -42,18 +42,22 @@ public interface PermissionsStorage {
     Set<PermissionsDomain> getDomains();
 
     /**
-     * Stores (adds or updates) permission.
+     * Stores (adds or updates) permissions.
      * It is up to storage specific if it actually replaces existed permissions or ignore it
      *
-     * @param permission
+     * @param permissions
      *         permission to store
+     * @throws ServerException
+     *         when any other error occurs during permissions storing
      */
-    void store(PermissionsImpl permission) throws ServerException;
+    void store(PermissionsImpl permissions) throws ServerException;
 
     /**
      * @param user
      *         user id
      * @return set of permissions
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     List<PermissionsImpl> get(String user) throws ServerException;
 
@@ -63,6 +67,8 @@ public interface PermissionsStorage {
      * @param domain
      *         domain id
      * @return set of permissions
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     List<PermissionsImpl> get(String user, String domain) throws ServerException;
 
@@ -74,6 +80,10 @@ public interface PermissionsStorage {
      * @param instance
      *         instance id
      * @return set of permissions
+     * @throws NotFoundException
+     *         when permissions with given user and domain and instance was not found
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     PermissionsImpl get(String user, String domain, String instance) throws ServerException, NotFoundException;
 
@@ -83,6 +93,8 @@ public interface PermissionsStorage {
      * @param instance
      *         instance id
      * @return set of permissions
+     * @throws ServerException
+     *         when any other error occurs during permissions fetching
      */
     List<PermissionsImpl> getByInstance(String domain, String instance) throws ServerException;
 
@@ -96,6 +108,8 @@ public interface PermissionsStorage {
      * @param action
      *         action name
      * @return true if the permission exists
+     * @throws ServerException
+     *         when any other error occurs during permission existence checking
      */
     boolean exists(String user, String domain, String instance, String action) throws ServerException;
 
@@ -108,6 +122,8 @@ public interface PermissionsStorage {
      *         domain id
      * @param instance
      *         instance id
+     * @throws ServerException
+     *         when any other error occurs during permissions removing
      */
     void remove(String user, String domain, String instance) throws ServerException,
                                                                     ConflictException;
