@@ -10,7 +10,9 @@
 # --systemAdminName=<SYSTEM ADMIN NAME>
 # --systemAdminPassword=<SYSTEM ADMIN PASSWORD>
 # --fair-source-license=accept
-# --install-directory=<PATH_TO_SINGLE_DIRECTORY_FOR_ALL_RESOURCES>
+# --install-directory=<PATH TO SINGLE DIRECTORY FOR ALL RESOURCES>
+# --http-proxy=<HTTP PROXY URL>
+# --https-proxy=<HTTPS PROXY URL>
 
 trap cleanUp EXIT
 
@@ -164,7 +166,7 @@ fetchProperty() {
 }
 
 # run specific function and don't break installation if connection lost
-doEvalWaitReconnection() {
+evalWithWaitingReconnection() {
     local func=$1
     shift
 
@@ -187,40 +189,44 @@ doEvalWaitReconnection() {
     done
 }
 
-doConfigureSystem() {
+configureProxySettings() {
+
+}
+
+installSystemPackages() {
     setStepIndicator 0
 
     if [ -d ${DIR} ]; then rm -rf ${DIR}; fi
     mkdir ${DIR}
 
-    doEvalWaitReconnection installPackageIfNeed tar
+    evalWithWaitingReconnection installPackageIfNeed tar
     validateExitCode $?
 
-    doEvalWaitReconnection installPackageIfNeed unzip
+    evalWithWaitingReconnection installPackageIfNeed unzip
     validateExitCode $?
 
-    doEvalWaitReconnection installPackageIfNeed net-tools
+    evalWithWaitingReconnection installPackageIfNeed net-tools
     validateExitCode $?
 }
 
-doInstallJava() {
+installJava() {
     setStepIndicator 1
-    doEvalWaitReconnection installJava
+    evalWithWaitingReconnection installJava
     validateExitCode $?
 }
 
-doInstallImCli() {
+installImCli() {
     setStepIndicator 2
-    doEvalWaitReconnection installIm
+    evalWithWaitingReconnection installIm
     validateExitCode $?
 }
 
 # Download binaries. If file is corrupted due to unexpected errors then it will be redownloaded
-doDownloadBinaries() {
+downloadBinaries() {
     setStepIndicator 3
 
     for ((;;)); do
-        OUTPUT=$(doEvalWaitReconnection executeIMCommand im-download ${ARTIFACT} ${VERSION})
+        OUTPUT=$(evalWithWaitingReconnection executeIMCommand im-download ${ARTIFACT} ${VERSION})
         local exitCode=$?
         echo ${OUTPUT} | sed 's/\[[=> ]*\]//g'  >> install.log
 
@@ -296,7 +302,7 @@ doUpdateDownloadProgress() {
     updateLine ${PUPPET_LINE} "${message}"
 }
 
-doInstallCodenvy() {
+installCodenvy() {
     for ((STEP=1; STEP<=9; STEP++));  do
         if [ ${STEP} == 9 ]; then
             setStepIndicator $(( $STEP+3 ))
@@ -307,10 +313,10 @@ doInstallCodenvy() {
         for ((;;)); do
             local exitCode
             if [ ${CODENVY_TYPE} == "multi" ]; then
-                doEvalWaitReconnection executeIMCommand im-install --step ${STEP} --forceInstall --multi --config ${CONFIG} ${ARTIFACT} ${VERSION} >> install.log
+                evalWithWaitingReconnection executeIMCommand im-install --step ${STEP} --forceInstall --multi --config ${CONFIG} ${ARTIFACT} ${VERSION} >> install.log
                 exitCode=$?
             else
-                doEvalWaitReconnection executeIMCommand im-install --step ${STEP} --forceInstall --config ${CONFIG} ${ARTIFACT} ${VERSION} >> install.log
+                evalWithWaitingReconnection executeIMCommand im-install --step ${STEP} --forceInstall --config ${CONFIG} ${ARTIFACT} ${VERSION} >> install.log
                 exitCode=$?
             fi
 
@@ -384,9 +390,9 @@ preConfigureSystem() {
         exit 1
     fi
 
-    doCheckSystemManager
+    checkSystemManager
 
-    doCheckInstalledPuppet
+    checkInstalledPuppet
 
     sudo yum clean all &> /dev/null
 
@@ -395,7 +401,9 @@ preConfigureSystem() {
 
     installPackageIfNeed wget
     validateExitCode $?
-    
+
+    configureProxySettings
+
     # back up file to prevent installation with wrong configuration
     if [[ -f ${CONFIG} ]] && [[ ! $(cat ${CONFIG}) =~ .*${VERSION}.* ]]; then
         mv ${CONFIG} ${CONFIG}.back
@@ -608,7 +616,7 @@ pressYKeyToContinue() {
     fi
 }
 
-doCheckPortRemote() {
+checkPortRemote() {
     local protocol=$1
     local port=$2
     local host=$3
@@ -616,7 +624,7 @@ doCheckPortRemote() {
     echo ${OUTPUT}
 }
 
-doCheckPortLocal() {
+checkPortLocal() {
     local protocol=$1
     local port=$2
     OUTPUT=$(netstat -ano | egrep LISTEN | egrep ${protocol} | egrep ":${port}\s")
@@ -627,17 +635,17 @@ validatePortLocal() {
     local protocol=$1
     local port=$2
     local host="localhost"
-    doValidatePort doCheckPortLocal ${protocol} ${port} ${host}
+    validatePort doCheckPortLocal ${protocol} ${port} ${host}
 }
 
 validatePortRemote() {
     local protocol=$1
     local port=$2
     local host=$3
-    doValidatePort doCheckPortRemote ${protocol} ${port} ${host}
+    validatePort doCheckPortRemote ${protocol} ${port} ${host}
 }
 
-doValidatePort() {
+validatePort() {
     local func=$1
     local protocol=$2
     local port=$3
@@ -657,7 +665,7 @@ doValidatePort() {
     fi  
 }
 
-doGetHostsVariables() {
+getHostsVariables() {
     HOST_NAME=$(grep host_url\\s*=\\s*.* ${CONFIG} | sed 's/host_url\s*=\s*\(.*\)/\1/')
     PUPPET_MASTER_HOST_NAME=$(grep puppet_master_host_name=.* ${CONFIG} | cut -f2 -d '=')
     DATA_HOST_NAME=$(grep data_host_name=.* ${CONFIG} | cut -f2 -d '=')
@@ -669,7 +677,7 @@ doGetHostsVariables() {
     SITE_HOST_NAME=$(grep site_host_name=.* ${CONFIG} | cut -f2 -d '=')
 }
 
-doCheckAvailablePorts_single() {
+checkAvailablePorts_single() {
     for PORT in ${PUPPET_MASTER_PORTS[@]} ${SITE_PORTS[@]} ${API_PORTS[@]} ${DATA_PORTS[@]} ${DATASOURCE_PORTS[@]} ${RUNNER_PORTS[@]} ${BUILDER_PORTS[@]}; do
         PROTOCOL=$(echo ${PORT}|awk -F':' '{print $1}');
         PORT_ONLY=$(echo ${PORT}|awk -F':' '{print $2}');
@@ -678,7 +686,7 @@ doCheckAvailablePorts_single() {
     done
 }
 
-doCheckInstalledPuppet() {
+checkInstalledPuppet() {
     # check puppet agent
     rpm -qa | grep "^puppet-[0-9]" &> /dev/null; 
     if [ $? -eq 0 ]; then
@@ -702,7 +710,7 @@ doCheckInstalledPuppet() {
     fi
 }
 
-doCheckSystemManager() {
+checkSystemManager() {
     # we need to provide full path /sbin/pidof to avoid ssh error "bash: pidof: command not found" in integration tests
     /sbin/pidof systemd &> /dev/null;
     if [ $? -ne 0 ]; then
@@ -711,8 +719,8 @@ doCheckSystemManager() {
     fi
 }
 
-doCheckAvailablePorts_multi() {
-    doGetHostsVariables
+checkAvailablePorts_multi() {
+    getHostsVariables
 
     for HOST in ${PUPPET_MASTER_HOST_NAME} ${DATA_HOST_NAME} ${API_HOST_NAME} ${BUILDER_HOST_NAME} ${DATASOURCE_HOST_NAME} ${ANALYTICS_HOST_NAME} ${SITE_HOST_NAME} ${RUNNER_HOST_NAME}; do
         if [[ ${HOST} == ${PUPPET_MASTER_HOST_NAME} ]]; then
@@ -752,13 +760,13 @@ printPreInstallInfo_single() {
     println "Welcome. This program installs ${ARTIFACT_DISPLAY} ${VERSION}."
     println
 
-    doEnsureFairSourceLicenseAgreement
+    ensureFairSourceLicenseAgreement
 
     println "Checking system pre-requisites..."
     println
 
     preConfigureSystem
-    doCheckAvailableResourcesLocally 2500000 1 1000000 8000000 4 300000000
+    checkAvailableResourcesLocally 2500000 1 1000000 8000000 4 300000000
 
     println "Checking access to external dependencies..."
     println
@@ -786,10 +794,10 @@ printPreInstallInfo_single() {
         insertProperty "host_url" ${HOST_NAME}
     fi
 
-    doCheckAvailablePorts_single
+    checkAvailablePorts_single
 }
 
-doEnsureFairSourceLicenseAgreement() {
+ensureFairSourceLicenseAgreement() {
     if [[ ${FAIR_SOURCE_LICENSE_ACCEPTED} == true ]]; then
         println "You have accepted the Codenvy Fair Source license agreement to "
         println "install this software: http://codenvy.com/legal/fair-source"
@@ -817,7 +825,7 @@ doEnsureFairSourceLicenseAgreement() {
 # parameter 4 - REC_RAM_KB
 # parameter 5 - REC_CORES
 # parameter 6 - REC_DISK_SPACE_KB
-doCheckAvailableResourcesLocally() {
+checkAvailableResourcesLocally() {
     local MIN_RAM_KB=$1
     local MIN_CORES=$2
     local MIN_DISK_SPACE_KB=$3
@@ -967,7 +975,7 @@ checkResourceAccess() {
     local printStatus=true
 
     for resource in ${EXTERNAL_DEPENDENCIES[@]}; do
-        doCheckResourceAccess ${resource} ${printStatus} || resourceIssueFound=true
+        checkResourceAccess ${resource} ${printStatus} || resourceIssueFound=true
     done
 
     println
@@ -983,7 +991,7 @@ checkResourceAccess() {
     fi
 }
 
-doCheckResourceAccess() {
+checkResourceAccess() {
     local resource=$1
     local printStatus=$2
     local url=$(echo ${resource} | awk -F'|' '{print $1}');
@@ -1010,13 +1018,13 @@ printPreInstallInfo_multi() {
     println "Welcome. This program installs ${ARTIFACT_DISPLAY} ${VERSION}."
     println
 
-    doEnsureFairSourceLicenseAgreement
+    ensureFairSourceLicenseAgreement
 
     println "Checking system pre-requisites..."
     println
 
     preConfigureSystem
-    doCheckAvailableResourcesLocally 1000000 1 1000000 2000000 2 50000000
+    checkAvailableResourcesLocally 1000000 1 1000000 2000000 2 50000000
 
 
     if [[ ${ARTIFACT} == "codenvy" ]]; then
@@ -1041,7 +1049,7 @@ printPreInstallInfo_multi() {
             insertProperty "host_url" ${HOST_NAME}
         fi
 
-        doGetHostsVariables
+        getHostsVariables
 
         println "Hostname of Codenvy              : "${HOST_NAME}
         println "Hostname of Puppet master node   : "${PUPPET_MASTER_HOST_NAME}
@@ -1077,9 +1085,9 @@ printPreInstallInfo_multi() {
     println "Checking access to Codenvy nodes..."
     println
 
-    doCheckAvailableResourcesOnNodes
+    checkAvailableResourcesOnNodes
 
-    doCheckAvailablePorts_multi
+    checkAvailablePorts_multi
 
     println "Checking access to external dependencies..."
     println
@@ -1087,11 +1095,11 @@ printPreInstallInfo_multi() {
     checkResourceAccess
 }
 
-doCheckAvailableResourcesOnNodes() {
+checkAvailableResourcesOnNodes() {
     local globalNodeIssueFound=false
     local globalOsIssueFound=false
 
-    doGetHostsVariables
+    getHostsVariables
 
     local output=$(validateHostname ${PUPPET_MASTER_HOST_NAME})
     if [ "${output}" != "success" ]; then
@@ -1455,7 +1463,7 @@ doUpdateInternetAccessChecker() {
         local isRequiredToCheck=$(echo ${resource} | awk -F'|' '{print $3}');
 
         if [[ ${isRequiredToCheck} == 1 ]]; then
-            doCheckResourceAccess ${resource} ${printStatus} || checkFailed=1
+            checkResourceAccess ${resource} ${printStatus} || checkFailed=1
         fi
 
         if [[ ${checkFailed} == 1 ]]; then
@@ -1508,17 +1516,17 @@ runFooterUpdater
 runTimer
 runInternetAccessChecker
 
-doConfigureSystem
-doInstallJava
-doInstallImCli
+installSystemPackages
+installJava
+installImCli
 
 if [[ ${ARTIFACT} == "codenvy" ]]; then
     runDownloadProgressUpdater
-    doDownloadBinaries
+    downloadBinaries
     pauseDownloadProgressUpdater
 
     runPuppetInfoPrinter
-    doInstallCodenvy
+    installCodenvy
     pausePuppetInfoPrinter
 fi
 
