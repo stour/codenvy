@@ -45,8 +45,4 @@ public enum WorkspaceAction {
         }
         throw new IllegalArgumentException("No enum constant " + WorkspaceAction.class.getCanonicalName() + " with given value " + value);
     }
-
-    public static void main(String[] args) {
-        WorkspaceAction.valueOf("READ");
-    }
 }
