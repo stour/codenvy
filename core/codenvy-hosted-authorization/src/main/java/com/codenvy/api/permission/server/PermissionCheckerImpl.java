@@ -14,6 +14,7 @@
  */
 package com.codenvy.api.permission.server;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ServerException;
 
 import javax.inject.Inject;
@@ -32,7 +33,7 @@ public class PermissionCheckerImpl implements PermissionChecker {
     }
 
     @Override
-    public boolean hasPermission(String user, String domain, String instance, String action) throws ServerException {
+    public boolean hasPermission(String user, String domain, String instance, String action) throws ServerException, ConflictException {
         return permissionManager.exists(user, domain, instance, action);
     }
 }

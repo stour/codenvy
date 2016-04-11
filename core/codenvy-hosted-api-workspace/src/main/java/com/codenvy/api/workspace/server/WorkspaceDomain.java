@@ -16,8 +16,6 @@ package com.codenvy.api.workspace.server;
 
 import com.codenvy.api.permission.server.PermissionsDomain;
 
-import org.eclipse.che.api.core.model.workspace.Workspace;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,30 +25,9 @@ import java.util.stream.Stream;
 public class WorkspaceDomain extends PermissionsDomain {
     public static final String DOMAIN_ID = "workspace";
 
-    public enum WorkspaceActions {
-        READ("read"),
-        RUN("run"),
-        USE("use"),
-        CONFIGURE("configure"),
-        SET_PERMISSIONS("setPermissions"),
-        READ_PERMISSIONS("readPermissions"),
-        DELETE("delete");
-
-        private final String value;
-
-        WorkspaceActions(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-    }
-
     public WorkspaceDomain() {
-        super(DOMAIN_ID, Stream.of(WorkspaceActions.values())
-                               .map(WorkspaceActions::toString)
+        super(DOMAIN_ID, Stream.of(WorkspaceAction.values())
+                               .map(WorkspaceAction::toString)
                                .collect(Collectors.toSet()));
     }
 }

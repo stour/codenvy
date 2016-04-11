@@ -20,7 +20,8 @@ import com.codenvy.api.workspace.server.model.WorkerImpl;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.workspace.server.event.WorkspaceRemovedEvent;
+import org.eclipse.che.api.workspace.server.event.WorkspaceCreatedEvent;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,44 +29,25 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
- * Removes permissions related to workspace when it was removed
+ * Adds permissions for creator after workspace creation
  *
  * @author Sergii Leschenko
  */
 @Singleton
-public class WorkspacePermissionsRemover implements EventSubscriber<WorkspaceRemovedEvent> {
+public class WorkspaceCreatorPermissionsProvider implements EventSubscriber<WorkspaceCreatedEvent> {
     private static final Logger LOG = LoggerFactory.getLogger(WorkspacePermissionsRemover.class);
 
-    private final EventService eventService;
     private final WorkerDao    workerDao;
+    private final EventService eventService;
 
     @Inject
-    public WorkspacePermissionsRemover(EventService eventService,
-                                       WorkerDao workerDao) {
-        this.eventService = eventService;
+    public WorkspaceCreatorPermissionsProvider(EventService eventService, WorkerDao workerDao) {
         this.workerDao = workerDao;
-    }
-
-    @Override
-    public void onEvent(WorkspaceRemovedEvent event) {
-        final List<WorkerImpl> workers;
-        try {
-            workers = workerDao.getWorkers(event.getWorkspaceId());
-        } catch (ServerException e) {
-            LOG.error("Can't workers of workspace '" + event.getWorkspaceId() + "'", e);
-            return;
-        }
-
-        for (WorkerImpl worker : workers) {
-            try {
-                workerDao.removeWorker(worker.getWorkspace(), worker.getUser());
-            } catch (ServerException e) {
-                LOG.error("Can't remove user's workers to workspace", e);
-            }
-        }
+        this.eventService = eventService;
     }
 
     @PostConstruct
@@ -75,6 +57,18 @@ public class WorkspacePermissionsRemover implements EventSubscriber<WorkspaceRem
 
     @PreDestroy
     void unsubscribe() {
-        eventService.unsubscribe(this);
+        eventService.subscribe(this);
+    }
+
+    @Override
+    public void onEvent(WorkspaceCreatedEvent event) {
+        try {
+            workerDao.store(new WorkerImpl(EnvironmentContext.getCurrent().getUser().getId(),
+                                           event.getWorkspace().getId(),
+                                           Stream.of(WorkspaceAction.values())
+                                                 .collect(Collectors.toList())));
+        } catch (ServerException e) {
+            LOG.error("Can't add creator's permissions for workspace with id '" + event.getWorkspace().getId() + "'", e);
+        }
     }
 }

@@ -12,44 +12,38 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.permission.shared.dto;
+package com.codenvy.api.workspace.server.model;
 
-import com.codenvy.api.permission.shared.Permissions;
-
-import org.eclipse.che.dto.shared.DTO;
+import com.codenvy.api.workspace.server.WorkspaceAction;
 
 import java.util.List;
 
 /**
  * @author Sergii Leschenko
  */
-@DTO
-public interface PermissionsDto extends Permissions {
-    @Override
-    String getUser();
+public class WorkerImpl implements Worker {
+    private String                user;
+    private String                workspace;
+    private List<WorkspaceAction> actions;
 
-    void setUser(String user);
-
-    PermissionsDto withUser(String user);
-
-    @Override
-    String getDomain();
-
-    void setDomain(String domain);
-
-    PermissionsDto withDomain(String domain);
+    public WorkerImpl(String user, String workspace, List<WorkspaceAction> actions) {
+        this.user = user;
+        this.workspace = workspace;
+        this.actions = actions;
+    }
 
     @Override
-    String getInstance();
-
-    void setInstance(String instance);
-
-    PermissionsDto withInstance(String instance);
+    public String getUser() {
+        return user;
+    }
 
     @Override
-    List<String> getActions();
+    public String getWorkspace() {
+        return workspace;
+    }
 
-    void setActions(List<String> actions);
-
-    PermissionsDto withActions(List<String> actions);
+    @Override
+    public List<WorkspaceAction> getActions() {
+        return actions;
+    }
 }

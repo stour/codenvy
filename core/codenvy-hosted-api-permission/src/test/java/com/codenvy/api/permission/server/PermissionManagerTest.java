@@ -15,6 +15,7 @@
 package com.codenvy.api.permission.server;
 
 import com.codenvy.api.permission.server.dao.PermissionsStorage;
+import com.codenvy.api.permission.shared.Permissions;
 import com.google.common.collect.ImmutableSet;
 
 import org.eclipse.che.api.core.ConflictException;
@@ -26,12 +27,10 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.*;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -73,7 +72,7 @@ public class PermissionManagerTest {
 
     @Test
     public void shouldBeAbleToStorePermissions() throws Exception {
-        final Permissions permissions = new Permissions("user", "test", "test123", singletonList("setPermissions"));
+        final PermissionsImpl permissions = new PermissionsImpl("user", "test", "test123", singletonList("setPermissions"));
 
         permissionManager.storePermission(permissions);
 
@@ -85,18 +84,18 @@ public class PermissionManagerTest {
     public void shouldNotStorePermissionsWhenItRemoveLastSetPermissions() throws Exception {
         when(permissionsStorage.exists("user", "test", "test123", "setPermissions")).thenReturn(true);
         when(permissionsStorage.getByInstance("test", "test123"))
-                .thenReturn(singletonList(new Permissions("user", "test", "test123", singletonList("delete"))));
+                .thenReturn(singletonList(new PermissionsImpl("user", "test", "test123", singletonList("delete"))));
 
-        permissionManager.storePermission(new Permissions("user", "test", "test123", singletonList("delete")));
+        permissionManager.storePermission(new PermissionsImpl("user", "test", "test123", singletonList("delete")));
     }
 
     @Test
     public void shouldNotCheckExistingSetPermissionsIfUserDoesNotHaveItAtAll() throws Exception {
         when(permissionsStorage.exists("user", "test", "test123", "setPermissions")).thenReturn(false);
         when(permissionsStorage.getByInstance("test", "test123"))
-                .thenReturn(singletonList(new Permissions("user", "test", "test123", singletonList("delete"))));
+                .thenReturn(singletonList(new PermissionsImpl("user", "test", "test123", singletonList("delete"))));
 
-        permissionManager.storePermission(new Permissions("user", "test", "test123", singletonList("delete")));
+        permissionManager.storePermission(new PermissionsImpl("user", "test", "test123", singletonList("delete")));
 
         verify(permissionsStorage, never()).getByInstance(anyString(), anyString());
     }
@@ -113,7 +112,7 @@ public class PermissionManagerTest {
     public void shouldNotRemovePermissionsWhenItContainsLastSetPermissionsAction() throws Exception {
         when(permissionsStorage.exists("user", "test", "test123", "setPermissions")).thenReturn(true);
         when(permissionsStorage.getByInstance("test", "test123"))
-                .thenReturn(singletonList(new Permissions("user", "test", "test123", singletonList("delete"))));
+                .thenReturn(singletonList(new PermissionsImpl("user", "test", "test123", singletonList("delete"))));
 
         permissionManager.remove("user", "test", "test123");
     }
@@ -122,7 +121,7 @@ public class PermissionManagerTest {
     public void shouldNotCheckExistingSetPermissionsIfUserDoesNotHaveItAtAllOnRemove() throws Exception {
         when(permissionsStorage.exists("user", "test", "test123", "setPermissions")).thenReturn(false);
         when(permissionsStorage.getByInstance("test", "test123"))
-                .thenReturn(singletonList(new Permissions("user", "test", "test123", singletonList("delete"))));
+                .thenReturn(singletonList(new PermissionsImpl("user", "test", "test123", singletonList("delete"))));
 
         permissionManager.remove("user", "test", "test123");
 
@@ -131,7 +130,7 @@ public class PermissionManagerTest {
 
     @Test
     public void shouldBeAbleToGetPermissionsByUserAndDomainAndInstance() throws Exception {
-        final Permissions permissions = new Permissions("user", "test", "test123", singletonList("read"));
+        final PermissionsImpl permissions = new PermissionsImpl("user", "test", "test123", singletonList("read"));
         when(permissionsStorage.get("user", "test", "test123")).thenReturn(permissions);
 
         final Permissions fetchedPermissions = permissionManager.get("user", "test", "test123");
@@ -141,10 +140,10 @@ public class PermissionManagerTest {
 
     @Test
     public void shouldBeAbleToGetPermissionsByUserAndDomain() throws Exception {
-        final Permissions permissions = new Permissions("user", "test", "test123", singletonList("read"));
+        final PermissionsImpl permissions = new PermissionsImpl("user", "test", "test123", singletonList("read"));
         when(permissionsStorage.get("user", "test")).thenReturn(singletonList(permissions));
 
-        final List<Permissions> fetchedPermissions = permissionManager.get("user", "test");
+        final List<PermissionsImpl> fetchedPermissions = permissionManager.get("user", "test");
 
         assertEquals(fetchedPermissions.size(), 1);
         assertEquals(fetchedPermissions.get(0), permissions);
@@ -152,12 +151,12 @@ public class PermissionManagerTest {
 
     @Test
     public void shouldBeAbleToGetPermissionsByInstance() throws Exception {
-        final Permissions firstPermissions = new Permissions("user", "test", "test123", singletonList("read"));
-        final Permissions secondPermissions = new Permissions("user1", "test", "test123", singletonList("read"));
+        final PermissionsImpl firstPermissions = new PermissionsImpl("user", "test", "test123", singletonList("read"));
+        final PermissionsImpl secondPermissions = new PermissionsImpl("user1", "test", "test123", singletonList("read"));
 
         when(permissionsStorage.getByInstance("test", "test123")).thenReturn(Arrays.asList(firstPermissions, secondPermissions));
 
-        final List<Permissions> fetchedPermissions = permissionManager.getByInstance("test", "test123");
+        final List<PermissionsImpl> fetchedPermissions = permissionManager.getByInstance("test", "test123");
 
         assertEquals(fetchedPermissions.size(), 2);
         assertTrue(fetchedPermissions.contains(firstPermissions));
@@ -171,12 +170,12 @@ public class PermissionManagerTest {
         when(anotherStorage.getDomains()).thenReturn(ImmutableSet.of(new PermissionsDomain("domain", ImmutableSet.of("read"))));
         permissionManager = new PermissionManager(ImmutableSet.of(permissionsStorage, anotherStorage));
 
-        final Permissions firstPermissions = new Permissions("user", "domain", "domain123", singletonList("read"));
+        final PermissionsImpl firstPermissions = new PermissionsImpl("user", "domain", "domain123", singletonList("read"));
         when(anotherStorage.get("user")).thenReturn(singletonList(firstPermissions));
-        final Permissions secondPermissions = new Permissions("user", "test", "test123", singletonList("read"));
+        final PermissionsImpl secondPermissions = new PermissionsImpl("user", "test", "test123", singletonList("read"));
         when(permissionsStorage.get("user")).thenReturn(singletonList(secondPermissions ));
 
-        final List<Permissions> permissions = permissionManager.get("user");
+        final List<PermissionsImpl> permissions = permissionManager.get("user");
         assertEquals(permissions.size(), 2);
         assertTrue(permissions.contains(firstPermissions));
         assertTrue(permissions.contains(secondPermissions));

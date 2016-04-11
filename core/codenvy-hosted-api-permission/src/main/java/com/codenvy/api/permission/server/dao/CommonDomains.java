@@ -12,16 +12,23 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.permission.server;
+package com.codenvy.api.permission.server.dao;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ServerException;
+import com.google.inject.BindingAnnotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Checks user's permission to perform some action with particular instance of given domain
+ * Annotation for binding domains which will store their permissions in {@link CommonPermissionStorage}.
  *
  * @author Sergii Leschenko
  */
-public interface PermissionChecker {
-    boolean hasPermission(String user, String domain, String instance, String action) throws ServerException, ConflictException;
+@Target(ElementType.PARAMETER)
+@Retention(RUNTIME)
+@BindingAnnotation
+public @interface CommonDomains {
 }

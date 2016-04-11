@@ -35,7 +35,7 @@ public class WorkspaceApiModule extends AbstractModule {
         bind(CreateWorkspaceFilter.class);
         bind(WorkspacePermissionsFilter.class);
 
-        bind(WorkspaceOwnerPermissionsProvider.class).asEagerSingleton();
+        bind(WorkspaceCreatorPermissionsProvider.class).asEagerSingleton();
         bind(WorkspacePermissionsRemover.class).asEagerSingleton();
 
         Multibinder<PermissionsStorage> storages = Multibinder.newSetBinder(binder(),
@@ -46,7 +46,6 @@ public class WorkspaceApiModule extends AbstractModule {
         requestInjection(ramLimitInterceptor);
 
         bindInterceptor(subclassesOf(WorkspaceService.class), names("startById"), ramLimitInterceptor);
-        bindInterceptor(subclassesOf(WorkspaceService.class), names("startByName"), ramLimitInterceptor);
-        bindInterceptor(subclassesOf(WorkspaceService.class), names("startTemporary"), ramLimitInterceptor);
+        bindInterceptor(subclassesOf(WorkspaceService.class), names("startFromConfig"), ramLimitInterceptor);
     }
 }

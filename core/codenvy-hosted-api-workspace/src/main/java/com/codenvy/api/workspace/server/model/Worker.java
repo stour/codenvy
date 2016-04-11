@@ -12,16 +12,19 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.permission.server;
+package com.codenvy.api.workspace.server.model;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ServerException;
+import com.codenvy.api.workspace.server.WorkspaceAction;
+
+import java.util.List;
 
 /**
- * Checks user's permission to perform some action with particular instance of given domain
- *
  * @author Sergii Leschenko
  */
-public interface PermissionChecker {
-    boolean hasPermission(String user, String domain, String instance, String action) throws ServerException, ConflictException;
+public interface Worker {
+    String getUser();
+
+    String getWorkspace();
+
+    List<WorkspaceAction> getActions();
 }
