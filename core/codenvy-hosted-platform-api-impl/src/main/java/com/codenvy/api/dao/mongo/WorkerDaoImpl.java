@@ -15,7 +15,6 @@
 package com.codenvy.api.dao.mongo;
 
 import com.codenvy.api.workspace.server.dao.WorkerDao;
-import com.codenvy.api.workspace.server.model.Worker;
 import com.codenvy.api.workspace.server.model.WorkerImpl;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
@@ -35,7 +34,7 @@ import java.util.List;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-
+import static java.lang.String.format;
 
 /**
  * Workers collection document scheme:
@@ -88,7 +87,7 @@ public class WorkerDaoImpl implements WorkerDao {
         }
 
         if (found == null) {
-            throw new NotFoundException("TODO Fix message");//TODO
+            throw new NotFoundException(format("Worker with user '%s' and workspace '%s' was not found", user, workspace));
         }
 
         return found;
