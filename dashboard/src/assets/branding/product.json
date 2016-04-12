@@ -2,6 +2,7 @@
   "title": "Codenvy - Dashboard",
   "name": "Codenvy",
   "logoFile": "blueLogo.png",
+  "loaderLogoFile": "whiteLogo.png",
   "favicon": "favicon.ico",
   "ideResources": "/ide-resources/_app/",
   "helpPath": "https://codenvy.com/support/",
