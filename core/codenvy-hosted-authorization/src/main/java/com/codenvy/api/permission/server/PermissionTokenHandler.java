@@ -33,6 +33,8 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
+ * Sets up implementation of {@link User} that can check permissions by {@link PermissionChecker}
+ *
  * @author Sergii Leschenko
  */
 public class PermissionTokenHandler implements TokenHandler {
@@ -94,8 +96,7 @@ public class PermissionTokenHandler implements TokenHandler {
             try {
                 return permissionChecker.hasPermission(getId(), domain, instance, action);
             } catch (ServerException | ConflictException e) {
-                //TODO Think about throwing RuntimeException or rethrowing ServerException
-                return false;
+                throw new RuntimeException("Can't check user's permissions", e);
             }
         }
 

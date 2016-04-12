@@ -19,6 +19,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,13 +70,11 @@ public class HttpPermissionChecker implements PermissionChecker {
     }
 
     @Override
-    public boolean hasPermission(String user, String domain, String instance, String action) {
+    public boolean hasPermission(String user, String domain, String instance, String action) throws ServerException {
         try {
             return permissionsCache.get(new Key(user, domain, instance)).contains(action);
         } catch (Exception e) {
-            //TODO Think about throwing runtime exception here or add ServerException to hasPermissions method of User
-            LOG.error("Can't load users permissions", e);
-            return false;
+            throw new ServerException(e.getMessage(), e);
         }
     }
 
