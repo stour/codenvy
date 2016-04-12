@@ -22,6 +22,8 @@ import com.codenvy.auth.sso.client.TokenHandler;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.commons.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+import static java.lang.String.format;
+
 /**
  * Sets up implementation of {@link User} that can check permissions by {@link PermissionChecker}
  * and delegates calls to injected {@link Named Named("delegated.handler")} {@link TokenHandler}
@@ -39,6 +43,8 @@ import java.io.IOException;
  * @author Sergii Leschenko
  */
 public class PermissionTokenHandler implements TokenHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(PermissionTokenHandler.class);
+
     private final PermissionChecker permissionChecker;
     private final ServerClient      ssoServerClient;
     private final TokenHandler      delegate;
@@ -97,6 +103,7 @@ public class PermissionTokenHandler implements TokenHandler {
             try {
                 return permissionChecker.hasPermission(getId(), domain, instance, action);
             } catch (ServerException | ConflictException e) {
+                LOG.error(format("Can't check permissions for user '%s' and instance '%s' of domain '%s'", getId(), domain, instance), e);
                 throw new RuntimeException("Can't check user's permissions", e);
             }
         }

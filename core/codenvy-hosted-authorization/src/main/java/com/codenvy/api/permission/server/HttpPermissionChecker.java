@@ -19,6 +19,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.UriBuilder;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -41,8 +43,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Singleton
 public class HttpPermissionChecker implements PermissionChecker {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpPermissionChecker.class);
-
     private final LoadingCache<Key, Set<String>> permissionsCache;
 
     @Inject
@@ -61,10 +61,15 @@ public class HttpPermissionChecker implements PermissionChecker {
                                                                                                               "getUsersPermissions")
                                                                                                         .build(key.domain, key.instance)
                                                                                                         .toString();
-                                                    return new HashSet<>(requestFactory.fromUrl(getCurrentUsersPermissions)
-                                                                                       .useGetMethod()
-                                                                                       .request()
-                                                                                       .asList(String.class));
+                                                    try {
+                                                        return new HashSet<>(requestFactory.fromUrl(getCurrentUsersPermissions)
+                                                                                           .useGetMethod()
+                                                                                           .request()
+                                                                                           .asList(String.class));
+                                                    } catch (NotFoundException e) {
+                                                        //User doesn't have any allowed actions
+                                                        return Collections.emptySet();
+                                                    }
                                                 }
                                             });
     }
