@@ -34,6 +34,7 @@ import java.io.IOException;
 
 /**
  * Sets up implementation of {@link User} that can check permissions by {@link PermissionChecker}
+ * and delegates calls to injected {@link Named Named("delegated.handler")} {@link TokenHandler}
  *
  * @author Sergii Leschenko
  */
