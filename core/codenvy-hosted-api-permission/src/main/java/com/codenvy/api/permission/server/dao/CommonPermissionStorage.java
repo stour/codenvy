@@ -14,9 +14,9 @@
  */
 package com.codenvy.api.permission.server.dao;
 
-import com.codenvy.api.permission.shared.Permissions;
 import com.codenvy.api.permission.server.PermissionsDomain;
 import com.codenvy.api.permission.server.PermissionsImpl;
+import com.codenvy.api.permission.shared.Permissions;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -25,6 +25,7 @@ import com.mongodb.client.model.UpdateOptions;
 
 import org.bson.Document;
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
 import javax.inject.Inject;
@@ -32,7 +33,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -105,9 +105,9 @@ public class CommonPermissionStorage implements PermissionsStorage {
 
         final Set<String> allowedActions = permissionsDomain.getAllowedActions();
         final Set<String> unsupportedActions = permissions.getActions()
-                                                         .stream()
-                                                         .filter(action -> !allowedActions.contains(action))
-                                                         .collect(Collectors.toSet());
+                                                          .stream()
+                                                          .filter(action -> !allowedActions.contains(action))
+                                                          .collect(Collectors.toSet());
         if (!unsupportedActions.isEmpty()) {
             throw new IllegalArgumentException("Domain with id '" + permissions.getDomain() + "' doesn't support next action(s): " +
                                                unsupportedActions.stream()
@@ -159,7 +159,7 @@ public class CommonPermissionStorage implements PermissionsStorage {
     }
 
     @Override
-    public PermissionsImpl get(String user, String domain, String instance) throws ServerException {
+    public PermissionsImpl get(String user, String domain, String instance) throws ServerException, NotFoundException {
         PermissionsImpl found;
         try {
             found = collection.find(and(eq("user", user),
@@ -171,8 +171,8 @@ public class CommonPermissionStorage implements PermissionsStorage {
         }
 
         if (found == null) {
-            //TODO Maybe we should throw exception here
-            return new PermissionsImpl(user, domain, instance, Collections.emptyList());
+            throw new NotFoundException(String.format("Permissions for user '%s' and instance '%s' of domain '%s' was not found",
+                                                      user, instance, domain));
         }
 
         return found;
