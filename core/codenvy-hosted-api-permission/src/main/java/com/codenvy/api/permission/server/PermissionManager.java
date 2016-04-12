@@ -86,7 +86,7 @@ public class PermissionManager {
      *         domain id
      * @param instance
      *         instance id
-     * @return set of permissions
+     * @return user's permissions for specified instance
      * @throws ConflictException
      *         when given domain is unsupported
      * @throws NotFoundException
