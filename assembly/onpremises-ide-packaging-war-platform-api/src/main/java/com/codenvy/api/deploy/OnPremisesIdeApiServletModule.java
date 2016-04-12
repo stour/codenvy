@@ -116,7 +116,7 @@ public class OnPremisesIdeApiServletModule extends ServletModule {
                "/ext/*",
                "/ssh/*",
                "/ssh",
-               "/permissions/",
+               "/permissions",
                "/permissions/*")
                 .through(com.codenvy.auth.sso.client.LoginFilter.class);
 
