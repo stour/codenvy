@@ -62,7 +62,7 @@ public class WorkspacePermissionStorage implements PermissionsStorage {
                                        permissions.getInstance(),
                                        permissions.getActions()
                                                   .stream()
-                                                  .map(WorkspaceAction::valueOf)
+                                                  .map(WorkspaceAction::getAction)
                                                   .collect(Collectors.toList())));
     }
 
