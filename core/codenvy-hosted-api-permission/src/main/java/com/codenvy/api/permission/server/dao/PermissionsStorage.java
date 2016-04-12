@@ -79,7 +79,7 @@ public interface PermissionsStorage {
      *         domain id
      * @param instance
      *         instance id
-     * @return set of permissions
+     * @return user's permissions for specified instance
      * @throws NotFoundException
      *         when permissions with given user and domain and instance was not found
      * @throws ServerException
