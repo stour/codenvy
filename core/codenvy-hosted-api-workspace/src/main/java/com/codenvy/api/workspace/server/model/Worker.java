@@ -19,6 +19,8 @@ import com.codenvy.api.workspace.server.WorkspaceAction;
 import java.util.List;
 
 /**
+ * Describes relations between user and workspace
+ *
  * @author Sergii Leschenko
  */
 public interface Worker {

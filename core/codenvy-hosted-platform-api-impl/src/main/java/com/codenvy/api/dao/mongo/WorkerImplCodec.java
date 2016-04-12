@@ -52,7 +52,7 @@ public class WorkerImplCodec implements Codec<WorkerImpl> {
         return new WorkerImpl(document.getString("user"),
                               document.getString("workspace"),
                               actions.stream()
-                                     .map(WorkspaceAction::getEnum)
+                                     .map(WorkspaceAction::getAction)
                                      .collect(Collectors.toList()));
     }
 

@@ -104,14 +104,11 @@ public class PermissionsService extends Service {
     @GET
     @Path("/{domain}/{instance}")
     @Produces(APPLICATION_JSON)
-    public List<String> getUsersPermissions(@PathParam("domain") String domain,
-                                            @PathParam("instance") String instance)
-            throws ServerException, ConflictException, NotFoundException {
-        final Permissions permissions = permissionManager.get(EnvironmentContext.getCurrent().getUser().getId(), domain, instance);
-        if (permissions != null) {
-            return permissions.getActions();
-        }
-        return Collections.emptyList();
+    public PermissionsDto getUsersPermissions(@PathParam("domain") String domain,
+                                              @PathParam("instance") String instance) throws ServerException,
+                                                                                             ConflictException,
+                                                                                             NotFoundException {
+        return toDto(permissionManager.get(EnvironmentContext.getCurrent().getUser().getId(), domain, instance));
     }
 
     /**
@@ -129,11 +126,7 @@ public class PermissionsService extends Service {
                                                                                                              ConflictException {
         return permissionManager.getByInstance(domain, instance)
                                 .stream()
-                                .map(permissions -> DtoFactory.newDto(PermissionsDto.class)
-                                                              .withUser(permissions.getUser())
-                                                              .withDomain(permissions.getDomain())
-                                                              .withInstance(permissions.getInstance())
-                                                              .withActions(permissions.getActions()))
+                                .map(this::toDto)
                                 .collect(Collectors.toList());
     }
 
@@ -159,5 +152,13 @@ public class PermissionsService extends Service {
         if (!expression) {
             throw new BadRequestException(message);
         }
+    }
+
+    private PermissionsDto toDto(Permissions permissions) {
+        return DtoFactory.newDto(PermissionsDto.class)
+                         .withUser(permissions.getUser())
+                         .withDomain(permissions.getDomain())
+                         .withInstance(permissions.getInstance())
+                         .withActions(permissions.getActions());
     }
 }

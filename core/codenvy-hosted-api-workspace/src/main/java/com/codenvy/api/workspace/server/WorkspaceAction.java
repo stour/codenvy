@@ -26,23 +26,23 @@ public enum WorkspaceAction {
     READ_PERMISSIONS("readPermissions"),
     DELETE("delete");
 
-    private final String value;
+    private final String action;
 
-    WorkspaceAction(String value) {
-        this.value = value;
+    WorkspaceAction(String action) {
+        this.action = action;
     }
 
     @Override
     public String toString() {
-        return value;
+        return action;
     }
 
-    public static WorkspaceAction getEnum(String value) {
+    public static WorkspaceAction getAction(String action) {
         for (WorkspaceAction workspaceAction : values()) {
-            if (workspaceAction.value.equals(value)) {
+            if (workspaceAction.action.equals(action)) {
                 return workspaceAction;
             }
         }
-        throw new IllegalArgumentException("No enum constant " + WorkspaceAction.class.getCanonicalName() + " with given value " + value);
+        throw new IllegalArgumentException("No enum constant " + WorkspaceAction.class.getCanonicalName() + " with given value " + action);
     }
 }

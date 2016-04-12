@@ -36,7 +36,7 @@ public class CreateWorkspaceFilter extends CheMethodInvokerFilter {
     public void filter(GenericMethodResource genericMethodResource, Object[] arguments) throws ForbiddenException {
         final String methodName = genericMethodResource.getMethod().getName();
         if (methodName.equals("create")) {
-            final String accountId = ((String)arguments[1]);
+            final String accountId = ((String)arguments[3]);
 
             if (!Strings.isNullOrEmpty(accountId)) {
                 if (!EnvironmentContext.getCurrent().getUser().hasPermission("account", accountId, "createWorkspaces")) {
