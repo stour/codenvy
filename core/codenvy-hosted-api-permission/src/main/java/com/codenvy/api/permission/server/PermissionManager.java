@@ -54,8 +54,7 @@ public class PermissionManager {
     }
 
     /**
-     * Stores (adds or updates) permission.
-     * It is up to storage specific if it actually replaces existed permissions or ignore it
+     * Stores (adds or updates) permissions.
      *
      * @param permissions
      *         permission to store

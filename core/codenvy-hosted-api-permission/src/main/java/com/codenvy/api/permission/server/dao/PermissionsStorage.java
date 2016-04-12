@@ -43,7 +43,6 @@ public interface PermissionsStorage {
 
     /**
      * Stores (adds or updates) permissions.
-     * It is up to storage specific if it actually replaces existed permissions or ignore it
      *
      * @param permissions
      *         permission to store
