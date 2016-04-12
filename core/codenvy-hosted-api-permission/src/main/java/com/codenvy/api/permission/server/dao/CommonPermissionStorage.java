@@ -51,7 +51,7 @@ import static java.util.function.Function.identity;
  *
  * <p>Example of domain binding
  * <pre>
- *     Multibinder<PermissionsDomain> multibinder = Multibinder.newSetBinder(binder(), PermissionsDomain.class, CommonDomain.class);
+ *     Multibinder<PermissionsDomain> multibinder = Multibinder.newSetBinder(binder(), PermissionsDomain.class, CommonDomains.class);
  *     multibinder.addBinding().toInstance(new PermissionsDomain("myDomain",
  *                                                               new HashSet&lt;&gt;(Arrays.asList("read", "write", "use", "setPermissions"))));
  * </pre>
