@@ -123,6 +123,14 @@
             <artifactId>codenvy-plugin-google-oauth2</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.codenvy</groupId>
+            <artifactId>codenvy-plugin-customer-factories-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy</groupId>
+            <artifactId>codenvy-plugin-customer-factories-shared</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.codenvy.plugin</groupId>
             <artifactId>codenvy-plugin-microsoft-oauth2</artifactId>
         </dependency>

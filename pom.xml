@@ -553,6 +553,16 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.codenvy</groupId>
+                <artifactId>codenvy-plugin-customer-factories-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy</groupId>
+                <artifactId>codenvy-plugin-customer-factories-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.codenvy.plugin</groupId>
                 <artifactId>codenvy-plugin-microsoft-vsts-webhooks</artifactId>
                 <version>${project.version}</version>
