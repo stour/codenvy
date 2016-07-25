@@ -35,6 +35,14 @@
             <artifactId>metrics-servlets</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.codenvy</groupId>
+            <artifactId>codenvy-plugin-leventures-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy</groupId>
+            <artifactId>codenvy-plugin-leventures-shared</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.codenvy.hosted-infrastructure</groupId>
             <artifactId>codenvy-hosted-api-admin</artifactId>
         </dependency>

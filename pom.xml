@@ -99,6 +99,16 @@
             </dependency>
             <dependency>
                 <groupId>com.codenvy</groupId>
+                <artifactId>codenvy-plugin-leventures-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy</groupId>
+                <artifactId>codenvy-plugin-leventures-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy</groupId>
                 <artifactId>site</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
